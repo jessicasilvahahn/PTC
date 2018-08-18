@@ -1,29 +1,64 @@
 import serial as Serial
 import Estado
+import timer
 
 class Enquadramento:
     _serial = None
     # FIXME: (lucas) probably will not be /dev/ttyUSB0
     def __init__(self, portaSerial='/dev/ttyUSB0', baud):
-        _serial = Serial.Serial(baudRate=baud)
+        _serial = Serial.Serial(baudRate=baud, timeout=10.0)
         _serial.port = serialPort 
 
     #fazer o enquadramento de acordo com as flags e envia para a serial
     #def envia(self,buffer,bytes):
 
-    def desenquadra():
+    def desenquadra(self,estado):
         n = None
-   		if (estado == 'ocioso'):
-		    byte = _serial.read() 
-            if (byte == b'\x7E'):
-                n = 0
-                estado = 'RX'
-        if (estado == 'recepcao'):
-		    byte = _serial.read() 
-            if (byte == b'\x7D'):
-                estado = ''                
-            else:
-                
+        max_bytes = 256
+
+  	if (estado == 'ocioso'):
+		byte = _serial.read() 
+            	if (byte == b'\x7E'):
+                	n = 0
+                	estado = 'RX'
+	        else:
+	    		estado = 'ocioso'
+        if (estado == 'RX'):
+		byte = _serial.read() 
+            	if (byte == b'\x7D'):
+                	estado = 'escape'                
+            	elif (byte == b'\x7E'):
+			estado = 'RX'
+		else: #depois inserir logica de timeout 
+			n = n + 1
+			estado = 'recepcao'
+	if (estado == 'escape'):
+		byte = _serial.read()
+		if ((byte == b'\x7E') or (byte == b'\x7D'): # timeout _serial.interCharTimeout()
+			_serial.flushInput()
+			_serial.flushOutput()
+			estado = 'ocioso'
+		else:
+			n = n + 1
+                	estado = 'recepcao'
+	if (estado == 'recepcao')
+		byte = _serial.read()
+		frame = bytearray()
+		if (byte == b'\x7D'):
+			estado = 'escape'
+		if (byte == b'\x7E'):
+			buff = frame
+			estado = 'ocioso'
+		else: 
+			if (len(frame) <= max_bytes):
+				frame.append(byte)
+				n = n +1
+				estado = 'recepcao'
+			else: 
+				print('overflow')
+				_serial.flushInput()
+				_serial.flushOutput()
+				estado = 'ocioso'
                 
 
     def recebe(self,buffer):
@@ -34,28 +69,6 @@ class Enquadramento:
 #            return quadro
 #
 #
-#    def readSerial(self):
-#        # pegando dados da serial
-#        # criando objeto serial
-#        s = serial.Serial()
-#        # set info
-#        s.baudrate = self._baud
-#        s.port = self._portaSerial
-#        data = None
-#        # ler 256 bytes
-#        try:
-#            #ler 256 byte de forma de bloqueante (True)
-#            # FIXME: prabably should read byte by byte
-#            b = s.read()
-#            data = data + b
-#            return  data
-#        except ValueError:
-#            print('Ocorreu um erro ao tentar ler a serial')
-#            # should return a number here?
-#            return 0
-#
-    #maquina de estado do receptor, fazer
-    #def desenquadra(self, estado):
 
 
 
