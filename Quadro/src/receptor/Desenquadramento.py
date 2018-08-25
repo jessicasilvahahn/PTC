@@ -65,12 +65,13 @@ class Desenquadramento:
 #chamando maquina de estado
 
 #inciando classe desenquadramento
-d = Desenquadramento("/dev/pts/10",9600)
+d = Desenquadramento("/dev/pts/14",9600)
 estado = "ocioso"
 loop = 1
 
 while loop:
     byte,tamanho = d.recebe()
+    print(byte)
     loop = tamanho
     buff,estado = d.desenquadra(estado,byte)
 
