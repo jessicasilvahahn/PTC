@@ -11,18 +11,22 @@ class Desenquadrador:
         self.n = None
         self.max_bytes = 256
         self.frame = []
+        self.estado_anterior = None
 
     def desenquadra(self, byte):
+        self.estado_anterior = self.estado
+        print(self.estado)
         if self.estado == "ocioso":
             if byte == b'\x7E':
                 self.iniciaRecepcao()
+                return True
         if self.estado == "rx":
             if byte == b'\x7D':
                 self.estado = "escape"
+                return True
             elif byte == b'\x7E':
                 self.estado = "rx"
             else:
-                self.n = self.n + 1
                 self.estado = "recepcao"
         if self.estado == "escape":
             if byte == b'\x7E' or byte == b'\x7D':
@@ -30,8 +34,9 @@ class Desenquadrador:
                 mensagemErro = 'Recebeu byte de termino durante estado de escape'
                 raise RuntimeError(mensagemErro)
             else:
-                self.n = self.n + 1
-                self.estado = "recepcao"
+                info_original = int.from_bytes(byte, byteorder='big') ^ 20
+                self.armazenaDado(info_original.to_bytes(1, byteorder='big'))
+                return True
 
         if self.estado == "recepcao":
             if byte == b'\x7D':
@@ -41,14 +46,17 @@ class Desenquadrador:
                 return False
             else:
                 if self.n < self.max_bytes:
-                    self.n = self.n + 1
-                    self.frame.append(byte)
-                    self.estado = "recepcao"
+                    self.armazenaDado(byte)
                 else:
                     self.finalizaRecepcao()
                     erro = 'Excedeu o numero maximo de bytes em um pacote'
                     raise RuntimeError(erro)
         return True
+
+    def armazenaDado(self, dado):
+        self.n = self.n + 1
+        self.frame.append(dado)
+        self.estado = "recepcao"
 
     def iniciaRecepcao(self):
         self.n = 0
@@ -66,7 +74,8 @@ class Desenquadrador:
         while continuarRecebendo:
             byte = self._serial.read()
             if ((byte == b'') and (self.estado != "ocioso")):
-                print("deu timeout")
+                print("Ocorreu timeout, retornando ao estado ocioso")
+                self.finalizaRecepcao()
                 continuarRecebendo = False
             continuarRecebendo = self.desenquadra(byte)
         payload = self.frame

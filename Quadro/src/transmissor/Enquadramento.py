@@ -24,7 +24,7 @@ class Enquadramento:
         self.quadro.append(toInt(b'\x7E'))
         for byte in payload:
             self.enquadra(byte)
-        self.quadro.append(toInt(b'\x7E'))
+        #self.quadro.append(toInt(b'\x7E'))
         print(bytearray(self.quadro))
         self._serial.write(bytearray(self.quadro))
         self.quadro = []
