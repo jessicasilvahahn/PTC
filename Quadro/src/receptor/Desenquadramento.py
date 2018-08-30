@@ -1,4 +1,5 @@
 import serial
+from PTC.Quadro.src import crc
 
 # TODO: Precisamos achar um nome melhor pra essa classe
 
@@ -6,6 +7,7 @@ import serial
 class Desenquadrador:
 
     def __init__(self, portaSerial, baud):
+        self.objeto_crc = crc.CRC16(b'')
         self.estado = "ocioso"
         self._serial = serial.Serial(port=portaSerial, baudrate=baud)
         self.n = None
@@ -60,7 +62,7 @@ class Desenquadrador:
 
     def iniciaRecepcao(self):
         self.n = 0
-        self._serial.timeout = 3  # segundos
+        self._serial.timeout = 0.1  # segundos
         self.estado = "rx"
 
     def finalizaRecepcao(self):
@@ -78,7 +80,12 @@ class Desenquadrador:
                 self.finalizaRecepcao()
                 continuarRecebendo = False
             continuarRecebendo = self.desenquadra(byte)
-        payload = self.frame
+        self.objeto_crc.clear()
+        self.objeto_crc.update(bytearray(self.frame))
+        if (self.objeto_crc.check_crc(bytearray(self.frame))):
+            payload = self.frame[0:-2]
+        else:
+            payload = []
         self.finalizaRecepcao()
         return payload
 
