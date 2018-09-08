@@ -80,12 +80,8 @@ class Desenquadrador:
                 self.finalizaRecepcao()
                 continuarRecebendo = False
             continuarRecebendo = self.desenquadra(byte)
-        self.objeto_crc.clear()
-        self.objeto_crc.update(bytearray(self.frame))
-        if (self.objeto_crc.check_crc(bytearray(self.frame))):
-            payload = self.frame[0:-2]
-        else:
-            payload = []
+
+        payload = self.frame
         self.finalizaRecepcao()
         return payload
 

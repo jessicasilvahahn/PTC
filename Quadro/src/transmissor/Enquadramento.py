@@ -30,7 +30,7 @@ class Enquadramento:
         self.quadro.append(toInt(b'\x7E'))
         print("transmitindo:",bytearray(self.quadro))
         #teste
-        self.quadro[1] = self.quadro[1] ^ 10
-        print(bytearray(self.quadro))
+        #self.quadro[1] = self.quadro[1] ^ 10
+        #print(bytearray(self.quadro))
         self._serial.write(bytearray(self.quadro))
         self.quadro = []

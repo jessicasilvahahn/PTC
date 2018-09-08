@@ -13,3 +13,10 @@ msg = msg[:-1]
 fcs.clear()
 fcs.update(msg)
 print('Resultado da verificação da mensagem com FCS após modificá-la:', fcs.check_crc())
+
+#self.objeto_crc.clear()
+ #       self.objeto_crc.update(bytearray(self.frame))
+  #      if (self.objeto_crc.check_crc(bytearray(self.frame))):
+           # payload = self.frame[0:-2]
+   #     else:
+    #        payload = []
