@@ -1,83 +1,79 @@
-from PTC.Quadro.src.transmissor import Enquadramento
-from PTC.Quadro.src.receptor import Desenquadramento
+from Quadro.src.transmissor.Enquadramento import Enquadramento
+from Quadro.src.receptor.Desenquadramento import Desenquadrador
 
-#quadro arq é o payload do enquadramento
+
 class Arq:
-    def __init__(self):
+    def __init__(self, tratador_aplicacao, porta_receptor, porta_transmissor):
         self.estado = "comunicando"
         self.m = False
         self.n = False
-        self.quadro_recebido = None
         self.payload = None
+        self.tratador_aplicacao = tratador_aplicacao
+        self.quadro = {
+            'payload': None,
+            'sequencia': None,
+            'tipo': None,
+        }
 
+        self.receptor = Desenquadrador(porta_receptor, 9600)
+        self.transmissor = Enquadramento(porta_transmissor, 9600)
 
-    def MefArq(self):
-
+    # estruturas comportamentais ------------------------------------------------
+    def comportamentoArq(self, evento):
         if (self.estado == "comunicando"):
-            if (self.payload):
-                self.envia()
+            if (evento == 'envia payload'):
+                self.envia_dados()
                 self.estado = "aguardandoAck"
                 return
-            if (self.quadro_recebido):
-                if (self.m == self.extrai_sequencia()):
-                    self.extrai_payload()
-                    self.confirma()
-                    self.m = not self.m
-                elif (not self.m == self.extrai_sequencia()):
-                    self.confirma()
-                self.estado = "comunicando"
+            if (evento == 'quadro recebido'):
+                self.trata_recebimento()
                 return
         if (self.estado == "aguardandoAck"):
-            if (self.quadro_recebido):
-                if (self.m == self.extrai_sequencia()):
-                    self.extrai_payload()
-                    self.confirma()
-                    self.m = not self.m
-                elif (not self.m == self.extrai_sequencia()):
-                    self.confirma()
-                self.estado = "aguardandoAck"
-                return
-            if (self.ack == self.extrai_ack()):
-                if (not self.n == self.extrai_sequencia()):
-                    self.envia()
-                    self.setTimerOut()
-                    self.estado = "aguardandoAck"
-                if (self.n == self.extrai_sequencia()):
-                    self.n = not self.n
-                    self.estado = "comunicando"
-                return
+            if (evento == 'quadro recebido'):
+                if (self.quadro['tipo'] == 'dados'):
+                    self.trata_recebimento()
+                    return
+                if (self.quadro['tipo'] == 'confirmacao'):
+                    if(self.quadro['sequencia'] == self.n):
+                        self.n = not self.n
+                        self.estado = "comunicando"
+                    return
 
-    def setTimerOut(self):
+    def trata_recebimento(self):
+        if(self.quadro['sequencia'] == self.m):
+            self.tratador_aplicacao(self.quadro['payload'])
+            self.envia_confirmacao()
+            self.m = not self.m
+        elif (self.quadro['sequencia'] == (not self.m)):
+            self.envia_confirmacao()
+            self.estado = "comunicando"
+
+    # estruturas de recepcao --------------------------------------------------
+    def recebe(self):
+        quadro = self.receptor.recebe()
+        self.quadro['sequencia'] = self.extrai_sequencia(quadro)
+        self.quadro['tipo'] = self.extrai_tipo(quadro)
+        self.quadro['payload'] = self.extrai_payload(quadro)
+        self.comportamentoArq('quadro recebido')
+
+    def extrai_payload(self, quadro):
+        payload = quadro[2:-2]
+        return payload
+
+    def extrai_sequencia(self, quadro):
+        controle = quadro[0]
+        return ((controle & b'\x04') == b'\x04')
+
+    def extrai_tipo(self, quadro):
+        controle = quadro[0]
+        return ('confirmacao' if ((controle & b'\x80') == b'\x80') else 'dados')
+
+    # estruturas de envio ---------------------------------------------------
+    def envia(self, payload):
         pass
 
-    # retira bit 7 do byte de controle pra verificar se eh ACK ou DATA
-    def extrai_ack(self):
+    def envia_dados(self):
         pass
 
-    #montar quadro arq
-    def envia(self):
+    def envia_confirmacao(self):
         pass
-
-    #envia ack
-    def confirma(self):
-        pass
-
-    #extrai o payload do quadro
-    def extrai_payload(self):
-        #considerando que quadro é [] e tem controle(1byte) + proto(1byte) + payload + crc
-        self.quadro_recebido = []
-        self.payload = self.quadro_recebido[2:-2]
-        return
-
-
-    #extrai sequencia do byte de controle do quadro arq
-    def extrai_sequencia(self):
-        sequencia = self.quadro_recebido[0]
-        #ascii - 48 - bit 0 e 14 bit 1
-        bit_list = list(sequencia)
-        sequencia = bit_list[4]
-        if(sequencia==48):
-            return False
-        elif(sequencia==49):
-            return True
-
