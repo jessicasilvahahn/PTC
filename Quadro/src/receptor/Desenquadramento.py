@@ -20,6 +20,7 @@ class Desenquadrador:
         print(self.estado)
         if self.estado == "ocioso":
             if byte == b'\x7E':
+                self._serial.timeout = 1  # timeout de recepcao do quadro na camada ARQ
                 self.iniciaRecepcao()
                 return True
         if self.estado == "rx":
@@ -62,7 +63,7 @@ class Desenquadrador:
 
     def iniciaRecepcao(self):
         self.n = 0
-        self._serial.timeout = 0.05  # 50 mili segundos
+        self._serial.timeout = 0.05  # segundos
         self.estado = "rx"
 
     def finalizaRecepcao(self):

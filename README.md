@@ -9,9 +9,11 @@ Onde estudamos os protocolos existentes e projetamos um protocolo próprio ao lo
 
 #Falta implementar 
  - Terminar Transmissão ARQ
- - Verificar CRC
- - Aplicar retransmissão de quadro
+ - Verificar CRC no ARQ
+ - Aplicar retransmissão de quadro (quadro vazio vindo do desenquadra ou quando vim quadro com erro)
  - Tratar a tamanho máximo do payload, não podendo ultrapassar 256 bytes
  - Aplicar timeout no ARQ
+ - Tratar o enquadramento e desenquadramento a nível de transmissor e receptor, pois quando estiver em receptor ou transmissor terá um comportamento diferente
+
 
 
