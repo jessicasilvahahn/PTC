@@ -62,7 +62,7 @@ class Desenquadrador:
 
     def iniciaRecepcao(self):
         self.n = 0
-        self._serial.timeout = 0.1  # segundos
+        self._serial.timeout = 0.05  # 50 mili segundos
         self.estado = "rx"
 
     def finalizaRecepcao(self):
