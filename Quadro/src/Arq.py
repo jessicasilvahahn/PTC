@@ -66,11 +66,13 @@ class Arq:
 
     def extrai_tipo(self, quadro):
         controle = quadro[0]
-        return ('confirmacao' if ((controle & b'\x80') == b'\x80') else 'dados')
+        return ('confirmacao' if ((controle & b'\x40') == b'\x40') else 'dados')
+
 
     # estruturas de envio ---------------------------------------------------
     def envia(self, payload):
-        pass
+        self.payload = payload
+        self.comportamentoArq('envia payload')
 
     def envia_dados(self):
         pass
