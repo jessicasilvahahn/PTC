@@ -1,6 +1,5 @@
-from Quadro.src.transmissor.Enquadramento import Enquadramento
-from Quadro.src.receptor.Desenquadramento import Desenquadrador
-
+import Enquadramento
+import Desenquadramento
 
 class Arq:
     def __init__(self, tratador_aplicacao, porta_receptor, porta_transmissor):
@@ -20,31 +19,32 @@ class Arq:
 
     # estruturas comportamentais ------------------------------------------------
     def comportamentoArq(self, evento):
-        if (self.estado == "comunicando"):
-            if (evento == 'envia payload'):
+        if self.estado == "comunicando":
+            if evento == 'envia payload':
                 self.envia_dados()
                 self.estado = "aguardandoAck"
                 return
-            if (evento == 'quadro recebido'):
+            if evento == 'quadro recebido':
                 self.trata_recebimento()
                 return
-        if (self.estado == "aguardandoAck"):
-            if (evento == 'quadro recebido'):
-                if (self.quadro['tipo'] == 'dados'):
+        if self.estado == "aguardandoAck":
+            if evento == 'quadro recebido':
+                if self.quadro['tipo'] == 'dados':
                     self.trata_recebimento()
                     return
-                if (self.quadro['tipo'] == 'confirmacao'):
-                    if(self.quadro['sequencia'] == self.n):
+                if self.quadro['tipo'] == 'confirmacao':
+                    if self.quadro['sequencia'] == self.n:
                         self.n = not self.n
                         self.estado = "comunicando"
                     return
 
     def trata_recebimento(self):
-        if(self.quadro['sequencia'] == self.m):
+        if self.quadro['sequencia'] == self.m:
             self.tratador_aplicacao(self.quadro['payload'])
             self.envia_confirmacao()
             self.m = not self.m
-        elif (self.quadro['sequencia'] == (not self.m)):
+            self.estado = "aguardandoAck"
+        elif self.quadro['sequencia'] == (not self.m):
             self.envia_confirmacao()
             self.estado = "comunicando"
 
@@ -62,11 +62,11 @@ class Arq:
 
     def extrai_sequencia(self, quadro):
         controle = quadro[0]
-        return ((controle & b'\x04') == b'\x04')
+        return (controle & b'\x04') == b'\x04'
 
     def extrai_tipo(self, quadro):
         controle = quadro[0]
-        return ('confirmacao' if ((controle & b'\x40') == b'\x40') else 'dados')
+        return 'confirmacao' if ((controle & b'\x40') == b'\x40') else 'dados'
 
 
     # estruturas de envio ---------------------------------------------------
@@ -75,7 +75,18 @@ class Arq:
         self.comportamentoArq('envia payload')
 
     def envia_dados(self):
-        pass
+        self.quadro['tipo'] = self.quadro[0] & b'\x00'
+        if self.quadro['sequencia'] == False:
+            self.quadro['sequencia'] = self.quadro & b'\x00'
+        else:
+            self.quadro['sequencia'] = self.quadro & b'\x04'
+        self.quadro['payload'] = self.payload
+        self.transmissor.transmite(self.quadro)
 
     def envia_confirmacao(self):
-        pass
+        self.quadro['tipo'] = self.quadro[0] & b'\x40'
+        if self.quadro['sequencia'] == False:
+            self.quadro['sequencia'] = self.quadro[0] & b'\x00'
+        else:
+            self.quadro['sequencia'] = self.quadro[0] & b'\x04'
+        self.transmissor.transmite(self.quadro)

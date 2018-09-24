@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from PTC.Quadro.src import crc
+import crc
 fcs = crc.CRC16('Mensagem Transmitida')
 msg = fcs.gen_crc()
 print('Mensagem com FCS:', msg)
