@@ -1,5 +1,5 @@
-import Enquadramento
-import Desenquadramento
+from Enquadramento import Enquadramento
+from Desenquadramento import Desenquadrador
 
 class Arq:
     def __init__(self, tratador_aplicacao, porta_receptor, porta_transmissor):
@@ -75,18 +75,22 @@ class Arq:
         self.comportamentoArq('envia payload')
 
     def envia_dados(self):
-        self.quadro['tipo'] = self.quadro[0] & b'\x00'
-        if self.quadro['sequencia'] == False:
-            self.quadro['sequencia'] = self.quadro & b'\x00'
-        else:
-            self.quadro['sequencia'] = self.quadro & b'\x04'
-        self.quadro['payload'] = self.payload
-        self.transmissor.transmite(self.quadro)
+        #problema de conversao
+        controle = b'\x00'
+        payload_list = []
+        if self.n:
+            controle |= b'\x04'
+        header = [controle, b'\x00', b'\x00']
+        quadro = header + list(self.payload)
+        quadro_bytearray = bytearray(quadro)
+        quadro_bytes = bytes(quadro_bytearray)
+        print("qaudro do envia dados",quadro_bytes)
+        #enviar bytes
+        self.transmissor.transmite(quadro_bytes)
 
     def envia_confirmacao(self):
-        self.quadro['tipo'] = self.quadro[0] & b'\x40'
-        if self.quadro['sequencia'] == False:
-            self.quadro['sequencia'] = self.quadro[0] & b'\x00'
-        else:
-            self.quadro['sequencia'] = self.quadro[0] & b'\x04'
-        self.transmissor.transmite(self.quadro)
+        controle = b'\x40'
+        if self.n:
+            controle |= b'\x04'
+        quadro = [controle, b'\x00', b'\x00']
+        self.transmissor.transmite(bytearray(quadro))

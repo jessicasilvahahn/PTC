@@ -89,7 +89,7 @@ class Desenquadrador:
         vet = bytearray()
         for i in range(len(fcs)):
             vet = vet + fcs[i] #teste do payload corrompido: + fcs[i]
-        print("vet",vet)
+        #print("vet",vet)
         self.objeto_crc = crc.CRC16(vet)
         checksum = self.objeto_crc.check_crc()
         print(checksum)
