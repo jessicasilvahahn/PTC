@@ -22,12 +22,11 @@ class Enquadramento:
 
     def transmite(self, info):
         print("Iniciando...")
-        objeto_crc = crc.CRC16(info)
-        payload = objeto_crc.gen_crc()
         self.quadro.append(toInt(b'\x7E'))
-        for byte in payload:
+        for byte in info:
             self.enquadra(byte)
-        self.quadro.append(toInt(b'\x7E'))
-        print("transmitindo:",bytearray(self.quadro))
-        self._serial.write(bytearray(self.quadro))
+        crc16 = crc.CRC16(bytearray(self.quadro))
+        quadro = crc16.gen_crc()
+        quadro.append(toInt(b'\x7E'))
+        self._serial.write(bytearray(quadro))
         self.quadro = []

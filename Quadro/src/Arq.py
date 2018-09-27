@@ -1,6 +1,8 @@
 from Enquadramento import Enquadramento
 from Desenquadramento import Desenquadrador
 
+toInt = lambda hex: int.from_bytes(hex, byteorder='big')
+
 class Arq:
     def __init__(self, tratador_aplicacao, porta_receptor, porta_transmissor):
         self.estado = "comunicando"
@@ -71,7 +73,8 @@ class Arq:
 
     # estruturas de envio ---------------------------------------------------
     def envia(self, payload):
-        self.payload = payload
+        # Nós suportamos apenas UTF-8 no momento :D
+        self.payload = bytes(payload, 'utf-8')
         self.comportamentoArq('envia payload')
 
     def envia_dados(self):
@@ -80,13 +83,9 @@ class Arq:
         payload_list = []
         if self.n:
             controle |= b'\x04'
-        header = [controle, b'\x00', b'\x00']
+        header = [toInt(controle), toInt(b'\x00'), toInt(b'\x00')]
         quadro = header + list(self.payload)
-        quadro_bytearray = bytearray(quadro)
-        quadro_bytes = bytes(quadro_bytearray)
-        print("qaudro do envia dados",quadro_bytes)
-        #enviar bytes
-        self.transmissor.transmite(quadro_bytes)
+        self.transmissor.transmite(quadro)
 
     def envia_confirmacao(self):
         controle = b'\x40'
