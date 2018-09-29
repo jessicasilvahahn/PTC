@@ -17,6 +17,7 @@ class Desenquadrador:
 
     def desenquadra(self, byte):
         self.estado_anterior = self.estado
+        print("Entrei Maquina Desenquadra")
         print(self.estado)
         if self.estado == "ocioso":
             if byte == b'\x7E':
@@ -62,6 +63,7 @@ class Desenquadrador:
         self.estado = "recepcao"
 
     def iniciaRecepcao(self):
+        print("Inicia recepcao Maquina")
         self.n = 0
         self._serial.timeout = 0.05  # segundos
         self.estado = "rx"
@@ -74,8 +76,12 @@ class Desenquadrador:
 
     def recebe(self):
         continuarRecebendo = True
+        print("Recebe desenquadra")
         while continuarRecebendo:
+            print("Entrei para receber")
+            self._serial.timeout = 0.05  # segundos
             byte = self._serial.read()
+            print("Byte da serial",byte)
             if ((byte == b'') and (self.estado != "ocioso")):
                 print("Ocorreu timeout, retornando ao estado ocioso")
                 self.finalizaRecepcao()
@@ -89,7 +95,7 @@ class Desenquadrador:
         vet = bytearray()
         for i in range(len(fcs)):
             vet = vet + fcs[i] #teste do payload corrompido: + fcs[i]
-        #print("vet",vet)
+        print("vet",vet)
         self.objeto_crc = crc.CRC16(vet)
         checksum = self.objeto_crc.check_crc()
         print(checksum)

@@ -21,6 +21,7 @@ class Arq:
 
     # estruturas comportamentais ------------------------------------------------
     def comportamentoArq(self, evento):
+        print("Maquina ARQ")
         if self.estado == "comunicando":
             if evento == 'envia payload':
                 self.envia_dados()
@@ -52,7 +53,9 @@ class Arq:
 
     # estruturas de recepcao --------------------------------------------------
     def recebe(self):
+        print("Entrou recebe ARQ")
         quadro = self.receptor.recebe()
+        print(type(quadro))
         self.quadro['sequencia'] = self.extrai_sequencia(quadro)
         self.quadro['tipo'] = self.extrai_tipo(quadro)
         self.quadro['payload'] = self.extrai_payload(quadro)
@@ -64,23 +67,24 @@ class Arq:
 
     def extrai_sequencia(self, quadro):
         controle = quadro[0]
-        return (controle & b'\x04') == b'\x04'
+        print(controle)
+        return (controle and b'\x04') == b'\x04'
 
+    #Foi usado and ao inves de &, porque o python nao suporta esse operador.
     def extrai_tipo(self, quadro):
         controle = quadro[0]
-        return 'confirmacao' if ((controle & b'\x40') == b'\x40') else 'dados'
+        return 'confirmacao' if ((controle and b'\x40') == b'\x40') else 'dados'
 
 
     # estruturas de envio ---------------------------------------------------
     def envia(self, payload):
         # Nós suportamos apenas UTF-8 no momento :D
-        self.payload = bytes(payload, 'utf-8')
+        payload = self.converte_tipo(payload)
+        self.payload = payload
         self.comportamentoArq('envia payload')
 
     def envia_dados(self):
-        #problema de conversao
         controle = b'\x00'
-        payload_list = []
         if self.n:
             controle |= b'\x04'
         header = [toInt(controle), toInt(b'\x00'), toInt(b'\x00')]
@@ -92,4 +96,25 @@ class Arq:
         if self.n:
             controle |= b'\x04'
         quadro = [controle, b'\x00', b'\x00']
-        self.transmissor.transmite(bytearray(quadro))
+        quadro_convertido = self.converte_tipo(quadro)
+        self.transmissor.transmite(quadro_convertido)
+
+
+    # Funcao para conversao de tipos do payload
+    def converte_tipo(self, payload):
+        if type(payload) == type(''):
+            return bytes(payload, 'utf-8')
+        elif type(payload) == type(b''):
+            return payload
+        elif type(payload) == type([]):
+            vet = bytearray()
+            for i in range(len(payload)):
+                vet = vet + payload[i]
+            print("vet", vet)
+            byte = bytes(vet)
+            return byte
+        elif int(payload):
+            return bytes([payload])
+
+        else:
+            raise ValueError('Suportamos no momento apenas str, bytes ou inteiros')
