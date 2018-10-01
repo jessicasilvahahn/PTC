@@ -1,7 +1,9 @@
 from Enquadramento import Enquadramento
 from Desenquadramento import Desenquadrador
 
-toInt = lambda hex: int.from_bytes(hex, byteorder='big')
+
+def toInt(hex): return int.from_bytes(hex, byteorder='big')
+
 
 class Arq:
     def __init__(self, tratador_aplicacao, porta_receptor, porta_transmissor):
@@ -21,7 +23,7 @@ class Arq:
 
     # estruturas comportamentais ------------------------------------------------
     def comportamentoArq(self, evento):
-        print("Maquina ARQ")
+        print(evento)
         if self.estado == "comunicando":
             if evento == 'envia payload':
                 self.envia_dados()
@@ -53,9 +55,7 @@ class Arq:
 
     # estruturas de recepcao --------------------------------------------------
     def recebe(self):
-        print("Entrou recebe ARQ")
         quadro = self.receptor.recebe()
-        print(type(quadro))
         self.quadro['sequencia'] = self.extrai_sequencia(quadro)
         self.quadro['tipo'] = self.extrai_tipo(quadro)
         self.quadro['payload'] = self.extrai_payload(quadro)
@@ -67,21 +67,22 @@ class Arq:
 
     def extrai_sequencia(self, quadro):
         controle = quadro[0]
-        print(controle)
-        return (controle and b'\x04') == b'\x04'
+        teste = (toInt(controle) & toInt(b'\x04'))
+        return (toInt(controle) & toInt(b'\x04')) == toInt(b'\x04')
 
-    #Foi usado and ao inves de &, porque o python nao suporta esse operador.
+    # Foi usado and ao inves de &, porque o python nao suporta esse operador.
     def extrai_tipo(self, quadro):
         controle = quadro[0]
-        return 'confirmacao' if ((controle and b'\x40') == b'\x40') else 'dados'
-
+        return 'confirmacao' if ((toInt(controle) & toInt(b'\x40')) == toInt(b'\x40')) else 'dados'
 
     # estruturas de envio ---------------------------------------------------
+
     def envia(self, payload):
         # Nós suportamos apenas UTF-8 no momento :D
         payload = self.converte_tipo(payload)
         self.payload = payload
         self.comportamentoArq('envia payload')
+        self.recebe()
 
     def envia_dados(self):
         controle = b'\x00'
@@ -99,8 +100,8 @@ class Arq:
         quadro_convertido = self.converte_tipo(quadro)
         self.transmissor.transmite(quadro_convertido)
 
-
     # Funcao para conversao de tipos do payload
+
     def converte_tipo(self, payload):
         if type(payload) == type(''):
             return bytes(payload, 'utf-8')
@@ -110,11 +111,11 @@ class Arq:
             vet = bytearray()
             for i in range(len(payload)):
                 vet = vet + payload[i]
-            print("vet", vet)
             byte = bytes(vet)
             return byte
         elif int(payload):
             return bytes([payload])
 
         else:
-            raise ValueError('Suportamos no momento apenas str, bytes ou inteiros')
+            raise ValueError(
+                'Suportamos no momento apenas str, bytes ou inteiros')

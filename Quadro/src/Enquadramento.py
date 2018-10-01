@@ -1,10 +1,12 @@
 import serial
 import crc
 
-toInt = lambda hex: int.from_bytes(hex, byteorder='big')
+
+def toInt(hex): return int.from_bytes(hex, byteorder='big')
+
 
 class Enquadramento:
-    def __init__(self,portaSerial,baud):
+    def __init__(self, portaSerial, baud):
         self._serial = serial.Serial(portaSerial, baudrate=baud)
         self._serial.port = portaSerial
         self.n = None
@@ -19,11 +21,8 @@ class Enquadramento:
         else:
             self.quadro.append(byte)
 
-
     def transmite(self, info):
-        print("Iniciando Transmite...")
-        print("Quadro incial",info)
-        #para fazer p crc antes
+        # para fazer p crc antes
         payload_crc = bytearray(info)
         print(payload_crc)
         crc16 = crc.CRC16(payload_crc)
@@ -33,5 +32,4 @@ class Enquadramento:
             self.enquadra(byte)
         self.quadro.append(toInt(b'\x7E'))
         self._serial.write(bytearray(self.quadro))
-        print("Quadro transmite",self.quadro)
         self.quadro = []
