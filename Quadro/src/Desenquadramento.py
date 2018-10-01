@@ -52,7 +52,7 @@ class Desenquadrador:
                     self.finalizaRecepcao()
                     erro = 'Excedeu o numero maximo de bytes em um pacote'
                     raise RuntimeError(erro)
-        return True
+        return False
 
     def armazenaDado(self, dado):
         self.n = self.n + 1
@@ -75,10 +75,11 @@ class Desenquadrador:
         self._serial.timeout = 1  # segundos
         while continuarRecebendo:
             byte = self._serial.read()
-            if ((byte == b'') and (self.estado != "ocioso")):
+            if (byte == b''):
                 print("Ocorreu timeout, retornando ao estado ocioso")
                 self.finalizaRecepcao()
                 continuarRecebendo = False
+                return []
             continuarRecebendo = self.desenquadra(byte)
 
         payload = self.frame
