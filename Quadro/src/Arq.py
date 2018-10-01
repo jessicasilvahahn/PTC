@@ -12,6 +12,9 @@ class Arq:
         self.n = False
         self.payload = None
         self.tratador_aplicacao = tratador_aplicacao
+        self.tentativas = 0
+        self.idSessao = None  # settado pela sessao
+        self.transmissao_iniciada = False  # settado pela sessao
         self.quadro = {
             'payload': None,
             'sequencia': None,
@@ -39,6 +42,7 @@ class Arq:
                     return
                 if self.quadro['tipo'] == 'confirmacao':
                     if self.quadro['sequencia'] == self.n:
+                        self.tentativas = 0
                         self.n = not self.n
                         self.estado = "comunicando"
                     return
@@ -53,12 +57,34 @@ class Arq:
             self.envia_confirmacao()
             self.estado = "comunicando"
 
-    # estruturas de recepcao --------------------------------------------------
+    def trata_timeout(self):
+        self.tentativas += 1
+        self.comportamentoArq('envia payload')
+        self.recebe()
+
+    def estabelece_sessao(self, idSessao):
+        self.idSessao = idSessao
+
+        # estruturas de recepcao --------------------------------------------------
+
     def recebe(self):
-        quadro = self.receptor.recebe()
+        sessao_incorreta = True
+        while (sessao_incorreta):
+            quadro = self.receptor.recebe()
+            sessao_incorreta = not (
+                (self.idSessao == None) or (quadro[1] == self.idSessao))
+        if ((quadro == [])):
+            if (self.tentativas == 3):
+                return []
+            if (self.payload != None):
+                self.tentativas += 1
+                self.trata_timeout()
+            else:
+                return []
         self.quadro['sequencia'] = self.extrai_sequencia(quadro)
         self.quadro['tipo'] = self.extrai_tipo(quadro)
         self.quadro['payload'] = self.extrai_payload(quadro)
+        self.payload = None
         self.comportamentoArq('quadro recebido')
 
     def extrai_payload(self, quadro):
@@ -67,7 +93,6 @@ class Arq:
 
     def extrai_sequencia(self, quadro):
         controle = quadro[0]
-        teste = (toInt(controle) & toInt(b'\x04'))
         return (toInt(controle) & toInt(b'\x04')) == toInt(b'\x04')
 
     # Foi usado and ao inves de &, porque o python nao suporta esse operador.
@@ -88,15 +113,17 @@ class Arq:
         controle = b'\x00'
         if self.n:
             controle |= b'\x04'
-        header = [toInt(controle), toInt(b'\x00'), toInt(b'\x00')]
-        quadro = header + list(self.payload)
+        quadro = [toInt(controle)] + list(self.payload)
         self.transmissor.transmite(quadro)
 
     def envia_confirmacao(self):
+        if (self.transmissao_iniciada):
+            return
         controle = b'\x40'
         if self.n:
             controle |= b'\x04'
-        quadro = [controle, b'\x00', b'\x00']
+        quadro = [controle, self.idSessao, b'\x00']
+
         quadro_convertido = self.converte_tipo(quadro)
         self.transmissor.transmite(quadro_convertido)
 
