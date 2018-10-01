@@ -19,14 +19,13 @@ class Desenquadrador:
         self.estado_anterior = self.estado
         if self.estado == "ocioso":
             if byte == b'\x7E':
-                self._serial.timeout = 1  # timeout de recepcao do quadro na camada ARQ
                 self.iniciaRecepcao()
                 return True
         if self.estado == "rx":
             if byte == b'\x7D':
                 self.estado = "escape"
                 return True
-            elif byte == b'\x7E':
+            elif byte == b'\x7E':  # verificar isso
                 self.estado = "rx"
             else:
                 self.estado = "recepcao"
@@ -47,7 +46,7 @@ class Desenquadrador:
             if byte == b'\x7E':
                 return False
             else:
-                if self.n < self.max_bytes:
+                if self.n < self.max_bytes:  # tem que tirar isso aqui
                     self.armazenaDado(byte)
                 else:
                     self.finalizaRecepcao()
@@ -61,7 +60,6 @@ class Desenquadrador:
         self.estado = "recepcao"
 
     def iniciaRecepcao(self):
-        print("Inicia recepcao Maquina")
         self.n = 0
         self._serial.timeout = 0.05  # segundos
         self.estado = "rx"
@@ -74,8 +72,8 @@ class Desenquadrador:
 
     def recebe(self):
         continuarRecebendo = True
+        self._serial.timeout = 1  # segundos
         while continuarRecebendo:
-            self._serial.timeout = 0.05  # segundos
             byte = self._serial.read()
             if ((byte == b'') and (self.estado != "ocioso")):
                 print("Ocorreu timeout, retornando ao estado ocioso")
