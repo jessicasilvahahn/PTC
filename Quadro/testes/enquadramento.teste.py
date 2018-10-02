@@ -1,3 +1,0 @@
-import Serial
-
-phy = CamadaFisica(...)

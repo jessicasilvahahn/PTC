@@ -73,7 +73,7 @@ class Desenquadrador:
 
     def recebe(self):
         continuarRecebendo = True
-        self._serial.timeout = 1  # segundos
+        #self._serial.timeout = 1  # segundos
         while continuarRecebendo:
             byte = self._serial.read()
             if (byte == b''):
@@ -89,7 +89,7 @@ class Desenquadrador:
         fcs = payload
         vet = bytearray()
         for i in range(len(fcs)):
-            vet = vet + fcs[i]  # teste do payload corrompido: + fcs[i]
+            vet = vet + fcs[i] + bytearray(bytes("erro",'utf-8'))  # teste do payload corrompido: acrescentando mais informação
         self.objeto_crc = crc.CRC16(vet)
         checksum = self.objeto_crc.check_crc()
         if checksum == True:
@@ -97,4 +97,5 @@ class Desenquadrador:
             return payload
         else:
             erro_crc = "PAYLOAD CORROMPIDO"
+            print("Dado recebido",payload)
             raise RuntimeError(erro_crc)

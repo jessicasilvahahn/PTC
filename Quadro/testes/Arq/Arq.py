@@ -71,6 +71,7 @@ class Arq:
         sessao_incorreta = True
         while (sessao_incorreta):
             quadro = self.receptor.recebe()
+            print("Recebendo", quadro)
             sessao_incorreta = not (
                 (self.idSessao == None) or (quadro[1] == self.idSessao))
         if ((quadro == [])):
@@ -107,7 +108,7 @@ class Arq:
         payload = self.converte_tipo(payload)
         self.payload = payload
         self.comportamentoArq('envia payload')
-        self.recebe()
+        print("recebe",self.recebe())
 
     def envia_dados(self):
         controle = b'\x00'
@@ -125,7 +126,7 @@ class Arq:
         quadro = [controle, self.idSessao, b'\x00']
 
         quadro_convertido = self.converte_tipo(quadro)
-        self.transmissor.transmite(quadro_convertido)
+        #self.transmissor.transmite(quadro_convertido)
 
     # Funcao para conversao de tipos do payload
 
@@ -137,8 +138,8 @@ class Arq:
         elif type(payload) == type([]):
             vet = bytearray()
             for i in range(len(payload)):
-                if (payload[i] == None):
-                    vet = vet + b'\x00'  # nao da para concatenar com algo None
+                if(payload[i] == None):
+                    vet = vet + b'\x00' #nao da para concatenar com algo None
                 else:
                     vet = vet + payload[i]
             byte = bytes(vet)
