@@ -1,5 +1,6 @@
 from Enquadramento import Enquadramento
 from Desenquadramento import Desenquadrador
+import pickle
 
 
 def toInt(hex): return int.from_bytes(hex, byteorder='big')
@@ -77,8 +78,8 @@ class Arq:
         sessao_incorreta = True
         while (sessao_incorreta):
             quadro = self.receptor.recebe()
-            sessao_incorreta = not (
-                (self.idSessao == None) or (quadro[1] == self.idSessao))
+
+            sessao_incorreta = not (self.idSessao == None) or (quadro[1] == self.idSessao)
         if ((quadro == [])):
             if (self.tentativas == 3):
                 return []
@@ -136,6 +137,7 @@ class Arq:
         quadro = [controle, self.idSessao, b'\x00']
 
         quadro_convertido = self.converte_tipo(quadro)
+        print("Quadro confirmaçao a ser enviado",quadro)
         self.transmissor.transmite(quadro_convertido)
 
     # Funcao para conversao de tipos do payload
@@ -148,6 +150,7 @@ class Arq:
         elif type(payload) == type([]):
             vet = bytearray()
             for i in range(len(payload)):
+                print(payload[i])
                 if(payload[i] == None):
                     vet = vet + b'\x00' #nao da para concatenar com algo None,pode da problema na sessao
                 else:

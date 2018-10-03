@@ -1,3 +1,6 @@
-import Desenquadramento
-r = Desenquadramento.Desenquadrador("/dev/pts/11", 9600)
-print(r.recebe())
+from Arq import Arq
+
+porta_transmissor = "/dev/pts/9"
+porta_receptor = "/dev/pts/12"
+arq = Arq(lambda arg: print(arg), porta_transmissor, porta_receptor)
+arq.recebe()

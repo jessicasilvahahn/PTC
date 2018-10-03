@@ -26,9 +26,11 @@ class Arq:
 
     # estruturas comportamentais ------------------------------------------------
     def comportamentoArq(self, evento):
-        print(evento)
+        print("Evento",evento)
+        print("estado",self.estado)
         if self.estado == "comunicando":
             if evento == 'envia payload':
+                print("tentando enviar")
                 self.envia_dados()
                 self.estado = "aguardandoAck"
                 return
@@ -46,6 +48,9 @@ class Arq:
                         self.n = not self.n
                         self.estado = "comunicando"
                     return
+            if evento == 'envia payload':
+                self.envia_dados()
+                self.estado = "aguardandoAck"
 
     def trata_recebimento(self):
         if self.quadro['sequencia'] == self.m:
@@ -60,7 +65,8 @@ class Arq:
     def trata_timeout(self):
         self.tentativas += 1
         self.comportamentoArq('envia payload')
-        self.recebe()
+        if(self.recebe()==[]):
+            return []
 
     def estabelece_sessao(self, idSessao):
         self.idSessao = idSessao
@@ -71,22 +77,24 @@ class Arq:
         sessao_incorreta = True
         while (sessao_incorreta):
             quadro = self.receptor.recebe()
-            print("Recebendo", quadro)
             sessao_incorreta = not (
                 (self.idSessao == None) or (quadro[1] == self.idSessao))
         if ((quadro == [])):
             if (self.tentativas == 3):
                 return []
             if (self.payload != None):
-                self.tentativas += 1
-                self.trata_timeout()
+                #self.tentativas += 1
+                if(self.trata_timeout() == []):
+                    return []
             else:
                 return []
-        self.quadro['sequencia'] = self.extrai_sequencia(quadro)
-        self.quadro['tipo'] = self.extrai_tipo(quadro)
-        self.quadro['payload'] = self.extrai_payload(quadro)
-        self.payload = None
-        self.comportamentoArq('quadro recebido')
+        if(quadro!=[]):
+            self.quadro['sequencia'] = self.extrai_sequencia(quadro)
+            self.quadro['tipo'] = self.extrai_tipo(quadro)
+            self.quadro['payload'] = self.extrai_payload(quadro)
+            self.payload = None
+            self.comportamentoArq('quadro recebido')
+        return
 
     def extrai_payload(self, quadro):
         payload = quadro[2:-2]
@@ -108,7 +116,8 @@ class Arq:
         payload = self.converte_tipo(payload)
         self.payload = payload
         self.comportamentoArq('envia payload')
-        print("recebe",self.recebe())
+        if(self.recebe()==[]):
+            return []
 
     def envia_dados(self):
         controle = b'\x00'
@@ -118,6 +127,7 @@ class Arq:
         self.transmissor.transmite(quadro)
 
     def envia_confirmacao(self):
+        print("Envia confirmacao")
         if (self.transmissao_iniciada):
             return
         controle = b'\x40'
@@ -126,7 +136,7 @@ class Arq:
         quadro = [controle, self.idSessao, b'\x00']
 
         quadro_convertido = self.converte_tipo(quadro)
-        #self.transmissor.transmite(quadro_convertido)
+        self.transmissor.transmite(quadro_convertido)
 
     # Funcao para conversao de tipos do payload
 
@@ -139,12 +149,12 @@ class Arq:
             vet = bytearray()
             for i in range(len(payload)):
                 if(payload[i] == None):
-                    vet = vet + b'\x00' #nao da para concatenar com algo None
+                    vet = vet + b'\x00' #nao da para concatenar com algo None,pode da problema na sessao
                 else:
                     vet = vet + payload[i]
             byte = bytes(vet)
             return byte
-        elif int(payload):
+        elif (isinstance(payload,int)):
             return bytes([payload])
 
         else:

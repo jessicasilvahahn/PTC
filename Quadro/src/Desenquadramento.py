@@ -77,7 +77,7 @@ class Desenquadrador:
         while continuarRecebendo:
             byte = self._serial.read()
             if (byte == b''):
-                print("Ocorreu timeout, retornando ao estado ocioso")
+                print("Ocorreu timeout")
                 self.finalizaRecepcao()
                 continuarRecebendo = False
                 return []
