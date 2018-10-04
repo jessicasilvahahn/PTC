@@ -13,21 +13,22 @@ class Arq:
         self.payload = None
         self.tratador_aplicacao = tratador_aplicacao
         self.tentativas = 0
-        self.idSessao = None  # settado pela sessao
-        self.transmissao_iniciada = False  # settado pela sessao
         self.quadro = {
             'payload': None,
             'sequencia': None,
             'tipo': None,
         }
 
-        self.receptor = Desenquadrador(porta_receptor, 9600)
-        self.transmissor = Enquadramento(porta_transmissor, 9600)
+        try:
+            self.receptor = Desenquadrador(porta_receptor, 9600)
+            self.transmissor = Enquadramento(porta_transmissor, 9600)
+        except IOError:
+            print("Alguma porta serial não encontrada")
 
     # estruturas comportamentais ------------------------------------------------
     def comportamentoArq(self, evento):
         print("Evento",evento)
-        print("estado",self.estado)
+        print("Estado",self.estado)
         if self.estado == "comunicando":
             if evento == 'envia payload':
                 print("tentando enviar")
@@ -68,22 +69,15 @@ class Arq:
         if(self.recebe()==[]):
             return []
 
-    def estabelece_sessao(self, idSessao):
-        self.idSessao = idSessao
-
         # estruturas de recepcao --------------------------------------------------
 
     def recebe(self):
-        sessao_incorreta = True
-        while (sessao_incorreta):
-            quadro = self.receptor.recebe()
-            sessao_incorreta = not (
-                (self.idSessao == None) or (quadro[1] == self.idSessao))
+        quadro = self.receptor.recebe()
+        print("Quadro Recebido no ARQ", quadro)
         if ((quadro == [])):
             if (self.tentativas == 3):
                 return []
             if (self.payload != None):
-                #self.tentativas += 1
                 if(self.trata_timeout() == []):
                     return []
             else:
@@ -128,14 +122,12 @@ class Arq:
 
     def envia_confirmacao(self):
         print("Envia confirmacao")
-        if (self.transmissao_iniciada):
-            return
         controle = b'\x40'
         if self.n:
             controle |= b'\x04'
-        quadro = [controle, self.idSessao, b'\x00']
-
-        quadro_convertido = self.converte_tipo(quadro)
+        quadro = [controle]
+        quadro_convertido = self.converte_list(quadro)
+        print("Quadro de confirmação enviado (ack)",quadro)
         self.transmissor.transmite(quadro_convertido)
 
     # Funcao para conversao de tipos do payload
@@ -145,18 +137,17 @@ class Arq:
             return bytes(payload, 'utf-8')
         elif type(payload) == type(b''):
             return payload
-        elif type(payload) == type([]):
-            vet = bytearray()
-            for i in range(len(payload)):
-                if(payload[i] == None):
-                    vet = vet + b'\x00' #nao da para concatenar com algo None,pode da problema na sessao
-                else:
-                    vet = vet + payload[i]
-            byte = bytes(vet)
-            return byte
         elif (isinstance(payload,int)):
             return bytes([payload])
 
         else:
             raise ValueError(
                 'Suportamos no momento apenas str, bytes ou inteiros')
+
+    def converte_list(self,payload):
+        if(type(payload) == type([])):
+            vet = bytearray()
+            for i in range(len(payload)):
+                vet = vet + payload[i]
+            byte = bytes(vet)
+            return byte
