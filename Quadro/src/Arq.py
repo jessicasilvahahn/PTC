@@ -117,7 +117,7 @@ class Arq:
         controle = b'\x00'
         if self.n:
             controle |= b'\x04'
-        quadro = [toInt(controle)] + list(self.payload)
+        quadro = [toInt(controle)] + [toInt(b'\x00')] + list(self.payload)
         self.transmissor.transmite(quadro)
 
     def envia_confirmacao(self):
