@@ -1,5 +1,5 @@
 import serial
-from PTC.Quadro.src import crc
+import crc
 
 # TODO: Precisamos achar um nome melhor pra essa classe
 
@@ -17,17 +17,15 @@ class Desenquadrador:
 
     def desenquadra(self, byte):
         self.estado_anterior = self.estado
-        print(self.estado)
         if self.estado == "ocioso":
             if byte == b'\x7E':
-                self._serial.timeout = 1  # timeout de recepcao do quadro na camada ARQ
                 self.iniciaRecepcao()
                 return True
         if self.estado == "rx":
             if byte == b'\x7D':
                 self.estado = "escape"
                 return True
-            elif byte == b'\x7E':
+            elif byte == b'\x7E':  # verificar isso
                 self.estado = "rx"
             else:
                 self.estado = "recepcao"
@@ -48,13 +46,14 @@ class Desenquadrador:
             if byte == b'\x7E':
                 return False
             else:
-                if self.n < self.max_bytes:
+                if self.n < self.max_bytes:  # tem que tirar isso aqui
                     self.armazenaDado(byte)
+                    return True
                 else:
                     self.finalizaRecepcao()
                     erro = 'Excedeu o numero maximo de bytes em um pacote'
                     raise RuntimeError(erro)
-        return True
+        return False
 
     def armazenaDado(self, dado):
         self.n = self.n + 1
@@ -74,15 +73,28 @@ class Desenquadrador:
 
     def recebe(self):
         continuarRecebendo = True
+        self._serial.timeout = 1 # segundos
         while continuarRecebendo:
             byte = self._serial.read()
-            if ((byte == b'') and (self.estado != "ocioso")):
-                print("Ocorreu timeout, retornando ao estado ocioso")
+            if (byte == b''):
+                print("Ocorreu timeout")
                 self.finalizaRecepcao()
                 continuarRecebendo = False
+                return []
             continuarRecebendo = self.desenquadra(byte)
 
         payload = self.frame
-        self.finalizaRecepcao()
-        return payload
-
+        print("payload", payload)
+        fcs = payload
+        vet = bytearray()
+        for i in range(len(fcs)):
+            vet = vet + fcs[i]  # teste do payload corrompido: + fcs[i]
+        self.objeto_crc = crc.CRC16(vet)
+        check = self.objeto_crc.check_crc()
+        if check == True:
+            print("Dados confiaveis")
+            self.finalizaRecepcao()
+            return payload
+        else:
+            erro_crc = "PAYLOAD CORROMPIDO"
+            raise RuntimeError(erro_crc)

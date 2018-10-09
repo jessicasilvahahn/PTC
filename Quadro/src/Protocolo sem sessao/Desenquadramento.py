@@ -73,7 +73,7 @@ class Desenquadrador:
 
     def recebe(self):
         continuarRecebendo = True
-        self._serial.timeout = 10  # segundos
+        self._serial.timeout = 1 # segundos
         while continuarRecebendo:
             byte = self._serial.read()
             if (byte == b''):
@@ -84,7 +84,7 @@ class Desenquadrador:
             continuarRecebendo = self.desenquadra(byte)
 
         payload = self.frame
-
+        print("payload", payload)
         fcs = payload
         vet = bytearray()
         for i in range(len(fcs)):

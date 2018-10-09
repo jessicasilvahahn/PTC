@@ -85,12 +85,15 @@ class Desenquadrador:
             continuarRecebendo = self.desenquadra(byte)
 
         payload = self.frame
+        print("payload", payload)
         self.finalizaRecepcao()
 
         fcs = payload
         vet = bytearray()
         for i in range(len(fcs)):
             vet = vet + fcs[i]  # teste do payload corrompido: + fcs[i]
+
+        print("Antes CRC",vet)
         self.objeto_crc = crc.CRC16(vet)
         checksum = self.objeto_crc.check_crc()
         if checksum == True:

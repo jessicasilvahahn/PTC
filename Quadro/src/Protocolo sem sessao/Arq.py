@@ -125,7 +125,7 @@ class Arq:
         controle = b'\x40'
         if self.n:
             controle |= b'\x04'
-        quadro = [controle]
+        quadro = [controle, b'\x00'] #controle + proto
         quadro_convertido = self.converte_list(quadro)
         print("Quadro de confirmação enviado (ack)",quadro)
         self.transmissor.transmite(quadro_convertido)
