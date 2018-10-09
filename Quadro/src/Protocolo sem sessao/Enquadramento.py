@@ -16,7 +16,7 @@ class Enquadramento:
     def enquadra(self, byte):
         if ((byte == toInt(b'\x7E')) or (byte == toInt(b'\x7D'))):
             self.quadro.append(toInt(b'\x7D'))
-            self.quadro.append(byte ^ 20)
+            self.quadro.append(byte ^ 0x20)
 
         else:
             self.quadro.append(byte)
@@ -24,7 +24,7 @@ class Enquadramento:
     def transmite(self, info):
         # para fazer p crc antes
         payload_crc = bytearray(info)
-        print("Info da palicacao",info)
+        print("Info da aplicacao",info)
         crc16 = crc.CRC16(payload_crc)
         info = crc16.gen_crc()
         self.quadro.append(toInt(b'\x7E'))
