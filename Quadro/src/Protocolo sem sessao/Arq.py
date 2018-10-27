@@ -27,15 +27,13 @@ class Arq:
 
     # estruturas comportamentais ------------------------------------------------
     def comportamentoArq(self, evento):
-        print("Evento",evento)
-        print("Estado",self.estado)
         if self.estado == "comunicando":
             if evento == 'envia payload':
-                print("tentando enviar")
                 self.envia_dados()
                 self.estado = "aguardandoAck"
                 return
             if evento == 'quadro recebido':
+                print("recebeu quadro de dados")
                 self.trata_recebimento()
                 return
         if self.estado == "aguardandoAck":
@@ -59,9 +57,6 @@ class Arq:
             self.envia_confirmacao()
             self.m = not self.m
             self.estado = "aguardandoAck"
-        elif self.quadro['sequencia'] == (not self.m):
-            self.envia_confirmacao()
-            self.estado = "comunicando"
 
     def trata_timeout(self):
         self.tentativas += 1
@@ -73,7 +68,6 @@ class Arq:
 
     def recebe(self):
         quadro = self.receptor.recebe()
-        print("Quadro Recebido no ARQ", quadro)
         if ((quadro == [])):
             if (self.tentativas == 3):
                 return []
@@ -82,7 +76,7 @@ class Arq:
                     return []
             else:
                 return []
-        if(quadro!=[]):
+        if(quadro != []):
             self.quadro['sequencia'] = self.extrai_sequencia(quadro)
             self.quadro['tipo'] = self.extrai_tipo(quadro)
             self.quadro['payload'] = self.extrai_payload(quadro)
@@ -96,12 +90,11 @@ class Arq:
 
     def extrai_sequencia(self, quadro):
         controle = quadro[0]
-        return (toInt(controle) & toInt(b'\x04')) == toInt(b'\x04')
+        return (toInt(controle) & toInt(b'\x08')) == toInt(b'\x08')
 
-    # Foi usado and ao inves de &, porque o python nao suporta esse operador.
     def extrai_tipo(self, quadro):
         controle = quadro[0]
-        return 'confirmacao' if ((toInt(controle) & toInt(b'\x40')) == toInt(b'\x40')) else 'dados'
+        return 'confirmacao' if ((toInt(controle) & toInt(b'\x80')) == toInt(b'\x80')) else 'dados'
 
     # estruturas de envio ---------------------------------------------------
 
@@ -114,20 +107,21 @@ class Arq:
             return []
 
     def envia_dados(self):
-        controle = b'\x00'
         if self.n:
-            controle |= b'\x04'
+            controle = b'\x08'
+        else:
+            controle = b'\x00'
         quadro = [toInt(controle)] + [toInt(b'\x00')] + list(self.payload)
         self.transmissor.transmite(quadro)
 
     def envia_confirmacao(self):
-        print("Envia confirmacao")
-        controle = b'\x40'
-        if self.n:
-            controle |= b'\x04'
-        quadro = [controle, b'\x00'] #controle + proto
+        if self.m:
+            controle = b'\x88'
+        else:
+            controle = b'\x80'
+        controle = bytes(controle)
+        quadro = [controle, b'\x00']
         quadro_convertido = self.converte_list(quadro)
-        print("Quadro de confirmação enviado (ack)",quadro)
         self.transmissor.transmite(quadro_convertido)
 
     # Funcao para conversao de tipos do payload

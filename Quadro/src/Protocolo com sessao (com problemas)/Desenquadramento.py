@@ -35,7 +35,7 @@ class Desenquadrador:
                 mensagemErro = 'Recebeu byte de termino durante estado de escape'
                 raise RuntimeError(mensagemErro)
             else:
-                info_original = int.from_bytes(byte, byteorder='big') ^ 20
+                info_original = int.from_bytes(byte, byteorder='big') ^ 0x20
                 self.armazenaDado(info_original.to_bytes(1, byteorder='big'))
                 return True
 

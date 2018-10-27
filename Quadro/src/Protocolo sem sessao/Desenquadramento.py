@@ -84,7 +84,7 @@ class Desenquadrador:
             continuarRecebendo = self.desenquadra(byte)
 
         payload = self.frame
-        print("payload", payload)
+        #print("payload", payload)
         fcs = payload
         vet = bytearray()
         for i in range(len(fcs)):

@@ -16,7 +16,7 @@ class Enquadramento:
     def enquadra(self, byte):
         if ((byte == toInt(b'\x7E')) or (byte == toInt(b'\x7D'))):
             self.quadro.append(toInt(b'\x7D'))
-            self.quadro.append(byte ^ 20)
+            self.quadro.append(byte ^ 0x20)
 
         else:
             self.quadro.append(byte)
