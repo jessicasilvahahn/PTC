@@ -14,6 +14,8 @@ class Desenquadrador:
         self.max_bytes = 256
         self.frame = []
         self.estado_anterior = None
+        self.continuarRecebendo = None
+        self.timeout = False
 
     def desenquadra(self, byte):
         self.estado_anterior = self.estado
@@ -62,39 +64,39 @@ class Desenquadrador:
 
     def iniciaRecepcao(self):
         self.n = 0
-        self._serial.timeout = 0.05  # segundos
         self.estado = "rx"
 
     def finalizaRecepcao(self):
         self.estado = 'ocioso'
         self.n = None
         self.frame = []
-        self._serial.timeout = None
 
     def recebe(self):
-        continuarRecebendo = True
-        self._serial.timeout = 10 # segundos
-        while continuarRecebendo:
+        self.continuarRecebendo = True
+        while self.continuarRecebendo:
             byte = self._serial.read()
-            if (byte == b''):
-                print("Ocorreu timeout")
-                self.finalizaRecepcao()
-                continuarRecebendo = False
-                return []
-            continuarRecebendo = self.desenquadra(byte)
-
+            self.continuarRecebendo = self.desenquadra(byte)
         payload = self.frame
-        #print("payload", payload)
         fcs = payload
         vet = bytearray()
         for i in range(len(fcs)):
-            vet = vet + fcs[i]  # teste do payload corrompido: + fcs[i]
+            vet = vet + fcs[i]  
         self.objeto_crc = crc.CRC16(vet)
         check = self.objeto_crc.check_crc()
         if check == True:
-            print("Dados confiaveis")
+            print("Dados confiaveis!")
             self.finalizaRecepcao()
             return payload
         else:
-            erro_crc = "PAYLOAD CORROMPIDO"
+            erro_crc = "ERRO: Payload corrompido!"
             raise RuntimeError(erro_crc)
+
+    def handle_timeout(self):
+        self.finalizaRecepcao()
+        self.continuarRecebendo = False
+        self.timeout = True
+        return
+
+    def get_timeout(self):
+        return self.timeout
+

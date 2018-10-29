@@ -7,6 +7,8 @@ def toInt(hex): return int.from_bytes(hex, byteorder='big')
 
 class Arq:
     def __init__(self, tratador_aplicacao, porta_receptor, porta_transmissor):
+
+        self.proto = None
         self.estado = "comunicando"
         self.m = False
         self.n = False
@@ -53,7 +55,7 @@ class Arq:
 
     def trata_recebimento(self):
         if self.quadro['sequencia'] == self.m:
-            self.tratador_aplicacao(self.quadro['payload'])
+            #self.tratador_aplicacao(self.quadro['payload'])
             self.envia_confirmacao()
             self.m = not self.m
             self.estado = "aguardandoAck"
@@ -66,8 +68,7 @@ class Arq:
 
         # estruturas de recepcao --------------------------------------------------
 
-    def recebe(self):
-        quadro = self.receptor.recebe()
+    def recebe(self,quadro):
         if ((quadro == [])):
             if (self.tentativas == 3):
                 return []
@@ -98,20 +99,22 @@ class Arq:
 
     # estruturas de envio ---------------------------------------------------
 
-    def envia(self, payload):
+    def envia(self, proto,payload):
+        #conversao proto
+        self.converte_proto(proto)
         # Nós suportamos apenas UTF-8 no momento :D
         payload = self.converte_tipo(payload)
         self.payload = payload
         self.comportamentoArq('envia payload')
-        if(self.recebe()==[]):
-            return []
+        return
 
     def envia_dados(self):
         if self.n:
             controle = b'\x08'
         else:
             controle = b'\x00'
-        quadro = [toInt(controle)] + [toInt(b'\x00')] + list(self.payload)
+        quadro = [toInt(controle)] + [toInt(self.proto)] + list(self.payload)
+        print("Quadro ARQ:",bytearray(quadro))
         self.transmissor.transmite(quadro)
 
     def envia_confirmacao(self):
@@ -120,7 +123,7 @@ class Arq:
         else:
             controle = b'\x80'
         controle = bytes(controle)
-        quadro = [controle, b'\x00']
+        quadro = [controle, self.proto]
         quadro_convertido = self.converte_list(quadro)
         self.transmissor.transmite(quadro_convertido)
 
@@ -145,3 +148,12 @@ class Arq:
                 vet = vet + payload[i]
             byte = bytes(vet)
             return byte
+    
+    def converte_proto(self,proto):
+        #ipv4
+        if(proto==8):
+            self.proto = b'\x04'
+        #ver ipv6
+
+
+
