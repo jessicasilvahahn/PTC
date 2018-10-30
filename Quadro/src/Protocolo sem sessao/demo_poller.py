@@ -21,32 +21,62 @@ class CallbackTun(poller.Callback):
 
 class CallbackEnq(poller.Callback):
 
-  def __init__(self, enq, arq, tout):
+  def __init__(self, enq, arq, tun, tout):
     poller.Callback.__init__(self, enq._serial, tout)
     self.enq = enq
     self.arq = arq
+    self.tun = tun
 
   def handle(self):
     quadro = self.enq.recebe()
-    print("Quadro recebido da Serial:",arq.converte_list(quadro),"\n")
+    print("Quadro recebido da Serial:",arq.converte_list(quadro), "tamanho",len(arq.converte_list(quadro)),"\n")
     self.arq.recebe(quadro)
+    #enviando quadro recebedido para tun
+    self.envia_tun()
 
   def handle_timeout(self):
    print("Timeout Serial")
    self.enq.handle_timeout()
+  
+  def envia_tun(self):
+
+  	if(self.arq.proto == b'\x04'):
+  		self.arq.proto = 8
+  	else:
+  		pass
+  	
+  	if(self.arq.converte_list(self.arq.quadro['payload']) == b''):
+  		pass
+  	else:
+  		print("AVISO: enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
+  		#para teste e ver o pacote no wireshark
+  		payload = b'sou o payload do quadro recebido' + self.arq.converte_list(self.arq.quadro['payload']) 
+  		self.tun.send_frame(payload,self.arq.proto)
+
+
+
 
 
 tun = Tun("tun0","10.0.0.1","10.0.0.2",mask="255.255.255.252",mtu=1500,qlen=4)
 tun.start()
+#pegando as portas
+loop = True
+while(loop):
+	porta_transmissor = input("Favor digitar a porta serial referente ao transmissor:")
+	porta_receptor = input("Favor digitar a porta serial referente ao receptor:")
+	if(porta_receptor!=porta_transmissor):
+		loop = False
+	else:
+		print("\n Obs: Favor digitar portas diferentes para o transmissor e receptor\n")
 
 portas = {
-	'transmissor':"/dev/pts/9" ,
-	'receptor': "/dev/pts/10"
+	'transmissor': porta_transmissor,
+	'receptor': porta_receptor
 }
 
 arq = Arq(lambda arg: print(arg),portas['receptor'] , portas['transmissor'])
 enq = Desenquadramento.Desenquadrador(portas['receptor'], 9600)
-cb_enquadramento = CallbackEnq(enq,arq,10)
+cb_enquadramento = CallbackEnq(enq,arq,tun,10)
 cb_tun = CallbackTun(tun,1)
 
 sched = poller.Poller()
