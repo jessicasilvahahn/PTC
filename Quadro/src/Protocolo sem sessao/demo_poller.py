@@ -12,9 +12,10 @@ class CallbackTun(poller.Callback):
         self._tun = tun
      
     def handle(self):
-    	(proto,payload)= tun.get_frame()
-    	print("Bytes Recebidos da Tun:",payload)
-    	arq.envia(proto,payload)
+        (proto,payload)= tun.get_frame()
+        print("Bytes Recebidos da Tun:",payload)
+        print("prot:",proto)
+        arq.envia(proto,payload)
         
     def handle_timeout(self):
         print('Timeout Tun!')
@@ -40,18 +41,19 @@ class CallbackEnq(poller.Callback):
   
   def envia_tun(self):
 
-  	if(self.arq.proto == b'\x04'):
-  		self.arq.proto = 8
-  	else:
-  		pass
-  	
-  	if(self.arq.converte_list(self.arq.quadro['payload']) == b''):
-  		pass
-  	else:
-  		print("AVISO: enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
-  		#para teste e ver o pacote no wireshark
-  		payload = b'sou o payload do quadro recebido' + self.arq.converte_list(self.arq.quadro['payload']) 
-  		self.tun.send_frame(payload,self.arq.proto)
+    if(self.arq.proto == b'\x04'):
+  	    self.arq.proto = 8
+    elif(self.arq.proto == b'\x06'):
+        self.arq.proto = 16
+    else:
+        self.arq.proto = 0
+    if(self.arq.converte_list(self.arq.quadro['payload']) == b''):
+        pass
+    else:
+        print("AVISO: enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
+        #para teste e ver o pacote no wireshark
+        payload = b'sou o payload do quadro recebido' + self.arq.converte_list(self.arq.quadro['payload'])
+        self.tun.send_frame(payload,self.arq.proto)
 
 
 

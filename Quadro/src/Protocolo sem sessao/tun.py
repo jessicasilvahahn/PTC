@@ -123,6 +123,8 @@ além de enviar e receber quadros através desse tipo de interface'''
         ifr = struct.pack('16sH22x', self.name, flag)        
         fcntl.ioctl(s, Tun.SIOCSIFFLAGS, ifr)
         
+        v = os.system('ifconfig tun0 inet6 add 2801::1/128')
+        v = os.system('route -A inet6 add 2801::2/128 dev tun0')       
         
         
         
