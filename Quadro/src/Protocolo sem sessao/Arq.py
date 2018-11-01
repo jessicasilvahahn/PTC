@@ -102,9 +102,6 @@ class Arq:
     def envia(self, proto, payload):
         #conversao proto
         self.converte_proto(proto)
-        print(self.proto)
-        print("converte proto:", self.converte_proto(proto))
-        # Nós suportamos apenas UTF-8 no momento :D
         payload = self.converte_tipo(payload)
         self.payload = payload
         self.comportamentoArq('envia payload')
@@ -153,10 +150,10 @@ class Arq:
     
     def converte_proto(self,proto):
         #ipv4
-        if(proto==8):
+        if(proto==2048):
             self.proto = b'\x04'
-        #ver ipv6
-        elif(proto==16):
+        #ipv6
+        elif(proto==34525):
            self.proto = b'\x06'
         else:
             self.proto = b'\x00'

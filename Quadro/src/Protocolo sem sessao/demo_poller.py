@@ -12,9 +12,9 @@ class CallbackTun(poller.Callback):
         self._tun = tun
      
     def handle(self):
-        (proto,payload)= tun.get_frame()
+        proto, payload= tun.get_frame()
         print("Bytes Recebidos da Tun:",payload)
-        print("prot:",proto)
+        print("prot:%s" % hex(proto))
         arq.envia(proto,payload)
         
     def handle_timeout(self):
@@ -42,17 +42,17 @@ class CallbackEnq(poller.Callback):
   def envia_tun(self):
 
     if(self.arq.proto == b'\x04'):
-  	    self.arq.proto = 8
+  	    self.arq.proto = 0x800
     elif(self.arq.proto == b'\x06'):
-        self.arq.proto = 16
+        self.arq.proto = 0x86dd
     else:
-        self.arq.proto = 0
+        self.arq.proto = 0x000
     if(self.arq.converte_list(self.arq.quadro['payload']) == b''):
         pass
     else:
         print("AVISO: enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
         #para teste e ver o pacote no wireshark
-        payload = b'sou o payload do quadro recebido' + self.arq.converte_list(self.arq.quadro['payload'])
+        payload = self.arq.converte_list(self.arq.quadro['payload'])
         self.tun.send_frame(payload,self.arq.proto)
 
 
