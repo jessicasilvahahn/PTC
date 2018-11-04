@@ -29,6 +29,8 @@ class Arq:
 
     # estruturas comportamentais ------------------------------------------------
     def comportamentoArq(self, evento):
+        print("Evento",evento)
+        print("Estado",self.estado)
         if self.estado == "comunicando":
             if evento == 'envia payload':
                 self.envia_dados()
@@ -99,19 +101,22 @@ class Arq:
 
     # estruturas de envio ---------------------------------------------------
 
-    def envia(self, proto, payload):
+    def envia(self, proto,payload):
         #conversao proto
         self.converte_proto(proto)
+        # Nós suportamos apenas UTF-8 no momento :D
         payload = self.converte_tipo(payload)
         self.payload = payload
         self.comportamentoArq('envia payload')
         return
 
     def envia_dados(self):
+        print("envia dados")
         if self.n:
             controle = b'\x08'
         else:
             controle = b'\x00'
+        self.converte_proto(self.proto)
         quadro = [toInt(controle)] + [toInt(self.proto)] + list(self.payload)
         print("Quadro ARQ:",bytearray(quadro))
         self.transmissor.transmite(quadro)
@@ -122,8 +127,10 @@ class Arq:
         else:
             controle = b'\x80'
         controle = bytes(controle)
+        self.converte_proto(self.proto)
         quadro = [controle, self.proto]
         quadro_convertido = self.converte_list(quadro)
+        print("enviando confirmacao\n")
         self.transmissor.transmite(quadro_convertido)
 
     # Funcao para conversao de tipos do payload
@@ -141,6 +148,7 @@ class Arq:
                 'Suportamos no momento apenas str, bytes ou inteiros')
 
     def converte_list(self,payload):
+        print("convert list",payload)
         if(type(payload) == type([])):
             vet = bytearray()
             for i in range(len(payload)):
@@ -149,13 +157,15 @@ class Arq:
             return byte
     
     def converte_proto(self,proto):
+        print("converte proto",proto)
         #ipv4
-        if(proto==2048):
+        if(proto==8):
             self.proto = b'\x04'
-        #ipv6
-        elif(proto==34525):
-           self.proto = b'\x06'
+        #ver ipv6
+        if(proto==16):
+            self.proto = b'\x06'
         else:
             self.proto = b'\x00'
+
 
 
