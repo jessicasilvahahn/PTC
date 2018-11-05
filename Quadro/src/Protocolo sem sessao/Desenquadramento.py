@@ -48,13 +48,13 @@ class Desenquadrador:
             if byte == b'\x7E':
                 return False
             else:
-                if self.n < self.max_bytes:  # tem que tirar isso aqui
-                    self.armazenaDado(byte)
-                    return True
-                else:
-                    self.finalizaRecepcao()
-                    erro = 'Excedeu o numero maximo de bytes em um pacote'
-                    raise RuntimeError(erro)
+                #if self.n < self.max_bytes:  # tem que tirar isso aqui
+                self.armazenaDado(byte)
+                return True
+                #else:
+                    #self.finalizaRecepcao()
+                    #erro = 'Excedeu o numero maximo de bytes em um pacote'
+                    #raise RuntimeError(erro)
         return False
 
     def armazenaDado(self, dado):
