@@ -30,13 +30,15 @@ class CallbackEnq(poller.Callback):
   def handle(self):
     print("Handle Serial")
     quadro = self.enq.recebe()
-    print("Quadro recebido da serial:",quadro[1])
+    print("Quadro recebido da serial:",quadro)
+    print("Proto Serial",quadro[1])
     #print("Quadro recebido da Serial:",arq.converte_list(quadro), "tamanho",len(arq.converte_list(quadro)),"\n")
     self.arq.recebe(quadro)
     if(self.arq.proto==None):
     		self.arq.proto = quadro[1]
     #enviando quadro recebedido para tun
     self.envia_tun()
+    return
 
   def handle_timeout(self):
    print("Timeout Serial")
@@ -45,14 +47,15 @@ class CallbackEnq(poller.Callback):
   def envia_tun(self):
 
   	if(self.arq.proto == b'\x04'):
+  		print("aqui")
   		self.arq.proto = 8
-  	elif(self.arq.proto == b'\x06'):
+  	if(self.arq.proto == b'\x06'):
   		self.arq.proto = 16
-  	elif(self.arq.proto == b'\x00'):
-  		print("Não enviamos esse tipo de pacote para tun\n")
+  	if(self.arq.proto == b'\x00'):
+  		print("Nao enviamos para Tun\n")
   		return
-  	elif(self.arq.converte_list(self.arq.quadro['payload']) == b''):
-  		print("vazio")
+  	if(self.arq.converte_list(self.arq.quadro['payload']) == b''):
+  		return
   	
   	print("AVISO: enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
   	#para teste e ver o pacote no wireshark

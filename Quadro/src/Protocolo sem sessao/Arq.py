@@ -46,6 +46,7 @@ class Arq:
                     self.trata_recebimento()
                     return
                 if self.quadro['tipo'] == 'confirmacao':
+                    print("Recebi confirmacao")
                     if self.quadro['sequencia'] == self.n:
                         self.tentativas = 0
                         self.n = not self.n
@@ -158,14 +159,17 @@ class Arq:
     
     def converte_proto(self,proto):
         print("converte proto",proto)
+        if(proto==b'\x04' or proto==b'\x06'):
+            self.proto = proto
         #ipv4
         if(proto==8):
             self.proto = b'\x04'
         #ver ipv6
         if(proto==16):
             self.proto = b'\x06'
-        else:
+        if(proto!=8 and proto!=16 and proto!=b'\x04' and proto!=b'\x06'):
             self.proto = b'\x00'
+        print("Proto convertido",self.proto)
 
 
 
