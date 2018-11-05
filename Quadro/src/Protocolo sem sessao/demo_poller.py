@@ -32,10 +32,8 @@ class CallbackEnq(poller.Callback):
     quadro = self.enq.recebe()
     print("Quadro recebido da serial:",quadro)
     print("Proto Serial",quadro[1])
-    #print("Quadro recebido da Serial:",arq.converte_list(quadro), "tamanho",len(arq.converte_list(quadro)),"\n")
     self.arq.recebe(quadro)
-    if(self.arq.proto==None):
-    		self.arq.proto = quadro[1]
+    self.arq.proto = quadro[1]
     #enviando quadro recebedido para tun
     self.envia_tun()
     return
