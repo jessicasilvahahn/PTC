@@ -22,7 +22,7 @@ além de enviar e receber quadros através desse tipo de interface'''
     IFF_UP = 1
     IFF_RUNNING = 0x40
     PROTO_IPV4=0x800
-    PROTO_IPV6=0x866d
+    PROTO_IPV6=0x86dd
 
     TUNSETIFF = 0x400454ca
     SIOCSIFADDR = 0x8916
@@ -45,10 +45,8 @@ além de enviar e receber quadros através desse tipo de interface'''
         '''
         self.name = name.encode('ascii')
         self.ip = IP(ip)
-        print("ip",self.ip)
         self.dstip = IP(dstip)
         self.mask = IP(self._getarg('mask', args))
-        print("mask",self.mask)
         self.mtu = self._getarg('mtu', args)
         self.qlen = self._getarg('qlen', args)
         self.fd = -1
@@ -76,7 +74,7 @@ além de enviar e receber quadros através desse tipo de interface'''
         '''Envia os dados para a interface tun.
            dados: buffer com os bytes a enviar (bytes ou bytearray)
            proto: número do protocolo'''
-        frame = struct.pack('hh%ds' % len(dados), 0, proto, dados)
+        frame = struct.pack('!HH%ds' % len(dados), 0, proto, dados)
         os.write(self.fd, frame)
 
     def get_frame(self):
@@ -84,7 +82,7 @@ além de enviar e receber quadros através desse tipo de interface'''
            dados: buffer com os bytes recebido (tipo bytes)
            proto: número do protocolo'''
        dados = os.read(self.fd, self.mtu+4)
-       flags,proto,payload = struct.unpack('hh%ds' % (len(dados)-4), dados)
+       flags,proto,payload = struct.unpack('!HH%ds' % (len(dados)-4), dados)
        return proto,payload
 
     def _alloc(self):
@@ -123,7 +121,8 @@ além de enviar e receber quadros através desse tipo de interface'''
         ifr = struct.pack('16sH22x', self.name, flag)        
         fcntl.ioctl(s, Tun.SIOCSIFFLAGS, ifr)
         
-        
+        v = os.system('ifconfig tun0 inet6 add 2801::3/128')
+        v = os.system('route -A inet6 add 2801::2/128 dev tun0') 
         
         
         

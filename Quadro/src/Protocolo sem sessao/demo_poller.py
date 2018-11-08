@@ -13,7 +13,7 @@ class CallbackTun(poller.Callback):
      
     def handle(self):
     	(proto,payload)= tun.get_frame()
-    	print("Bytes Recebidos da Tun:",payload)
+    	print("Bytes Recebidos da Tun:'", proto, payload)
     	arq.envia(proto,payload)
         
     def handle_timeout(self):
@@ -46,9 +46,9 @@ class CallbackEnq(poller.Callback):
 
   	if(self.arq.proto == b'\x04'):
   		print("aqui")
-  		self.arq.proto = 8
+  		self.arq.proto = 2048 
   	if(self.arq.proto == b'\x06'):
-  		self.arq.proto = 16
+  		self.arq.proto = 34525
   	if(self.arq.proto == b'\x00'):
   		print("Nao enviamos para Tun\n")
   		return
@@ -59,7 +59,7 @@ class CallbackEnq(poller.Callback):
   	#para teste e ver o pacote no wireshark
   	payload = self.arq.converte_list(self.arq.quadro['payload']) 
   	print("payload envia tun",payload,"proto",self.arq.proto)
-  	self.tun.send_frame(payload,self.arq.proto)
+  	self.tun.send_frame(payload, self.arq.proto)
 
 
 
