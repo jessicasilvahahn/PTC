@@ -160,15 +160,14 @@ class Arq:
         if(proto==b'\x04' or proto==b'\x06'):
             self.proto = proto
         #ipv4
-        elif(proto==2048):
+        if(proto==2048):
             self.proto = b'\x04'
         #ver ipv6
-        elif(proto==34525):
+        if(proto==34525):
             self.proto = b'\x06'
-        elif(proto!=2048 and proto!=34525 and proto!=b'\x04' and proto!=b'\x06'):
+        if(proto!=2048 and proto!=34525 and proto!=b'\x04' and proto!=b'\x06'):
             self.proto = b'\x00'
-        else:
-            return
+        
         
 
 

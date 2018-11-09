@@ -44,18 +44,16 @@ class CallbackEnq(poller.Callback):
 
   	if(self.arq.proto == b'\x04'):
   		self.arq.proto = 2048 
-  	elif(self.arq.proto == b'\x06'):
+  	if(self.arq.proto == b'\x06'):
   		self.arq.proto = 34525
-  	elif(self.arq.proto == b'\x00'):
+  	if(self.arq.proto == b'\x00'):
   		return
-  	elif(self.arq.converte_list(self.arq.quadro['payload']) == b''):
+  	if(self.arq.converte_list(self.arq.quadro['payload']) == b''):
   		return
-  	else:
-  		return
-
+  	
   	if(self.enq.payload_corrompido):
   		print("AVISO: Não enviamos payload corrompido para a tun")
-  	else:
+  	if(self.enq.payload_corrompido==False):
 	  	print("AVISO: Enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
 	  	payload = self.arq.converte_list(self.arq.quadro['payload']) 
 	  	self.tun.send_frame(payload, self.arq.proto)
