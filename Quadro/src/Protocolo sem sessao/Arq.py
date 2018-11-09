@@ -157,18 +157,18 @@ class Arq:
             return byte
     
     def converte_proto(self,proto):
-        print("converte proto",proto)
         if(proto==b'\x04' or proto==b'\x06'):
             self.proto = proto
         #ipv4
-        if(proto==2048):
+        elif(proto==2048):
             self.proto = b'\x04'
         #ver ipv6
-        if(proto==34525):
+        elif(proto==34525):
             self.proto = b'\x06'
-        if(proto!=2048 and proto!=34525 and proto!=b'\x04' and proto!=b'\x06'):
+        elif(proto!=2048 and proto!=34525 and proto!=b'\x04' and proto!=b'\x06'):
             self.proto = b'\x00'
-        print("Proto convertido",self.proto)
-
+        else:
+            return
+        
 
 

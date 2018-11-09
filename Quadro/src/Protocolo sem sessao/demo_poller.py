@@ -43,13 +43,14 @@ class CallbackEnq(poller.Callback):
   def envia_tun(self):
 
   	if(self.arq.proto == b'\x04'):
-  		print("aqui")
   		self.arq.proto = 2048 
-  	if(self.arq.proto == b'\x06'):
+  	elif(self.arq.proto == b'\x06'):
   		self.arq.proto = 34525
-  	if(self.arq.proto == b'\x00'):
+  	elif(self.arq.proto == b'\x00'):
   		return
-  	if(self.arq.converte_list(self.arq.quadro['payload']) == b''):
+  	elif(self.arq.converte_list(self.arq.quadro['payload']) == b''):
+  		return
+  	else:
   		return
 
   	print("AVISO: Enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
