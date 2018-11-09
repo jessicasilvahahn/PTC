@@ -75,7 +75,10 @@ class Desenquadrador:
         self.continuarRecebendo = True
         while self.continuarRecebendo:
             byte = self._serial.read()
-            self.continuarRecebendo = self.desenquadra(byte)
+            if(self.get_timeout()):
+                self.continuarRecebendo = False
+            else:
+                self.continuarRecebendo = self.desenquadra(byte)
         payload = self.frame
         fcs = payload
         vet = bytearray()

@@ -13,7 +13,7 @@ class CallbackTun(poller.Callback):
      
     def handle(self):
     	(proto,payload)= tun.get_frame()
-    	print("Bytes Recebidos da Tun:'", proto, payload)
+    	print("Bytes Recebidos da Tun:",payload)
     	arq.envia(proto,payload)
         
     def handle_timeout(self):
@@ -28,10 +28,8 @@ class CallbackEnq(poller.Callback):
     self.tun = tun
 
   def handle(self):
-    print("Handle Serial")
     quadro = self.enq.recebe()
-    print("Quadro recebido da serial:",quadro)
-    print("Proto Serial",quadro[1])
+    print("Quadro recebido da Serial:",quadro)
     self.arq.recebe(quadro)
     self.arq.proto = quadro[1]
     #enviando quadro recebedido para tun
@@ -50,22 +48,28 @@ class CallbackEnq(poller.Callback):
   	if(self.arq.proto == b'\x06'):
   		self.arq.proto = 34525
   	if(self.arq.proto == b'\x00'):
-  		print("Nao enviamos para Tun\n")
   		return
   	if(self.arq.converte_list(self.arq.quadro['payload']) == b''):
   		return
-  	
-  	print("AVISO: enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
-  	#para teste e ver o pacote no wireshark
+
+  	print("AVISO: Enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
   	payload = self.arq.converte_list(self.arq.quadro['payload']) 
-  	print("payload envia tun",payload,"proto",self.arq.proto)
   	self.tun.send_frame(payload, self.arq.proto)
 
 
 
 
+tun_name = input("Favor digitar o nome da interface tun:")
+ip_v4_origem = input("Favor digitar o ipv4 de origem:")
+ip_v4_destino =  input("Favor digitar o ipv4 de destino:")
+print("\nAVISO: Não estamos fazendo a verificação do IPv6, favor digitá-los corretamente\n")
+print("O Ipv6 exemplo: 2801::3\n")
+ip_v6_origem = input("Favor digitar o ipv6 de origem:")
+ip_v6_destino =  input("Favor digitar o ipv6 de destino:")
 
-tun = Tun("tun0","10.0.0.1","10.0.0.2",mask="255.255.255.252",mtu=1500,qlen=4)
+
+
+tun = Tun(tun_name,ip_v4_origem,ip_v4_destino,ip_v6_origem,ip_v6_destino,mask="255.255.255.252",mtu=1500,qlen=4)
 tun.start()
 #pegando as portas
 porta_transmissor = input("Favor digitar a porta serial referente ao transmissor:")
@@ -74,7 +78,7 @@ porta_receptor = input("Favor digitar a porta serial referente ao receptor:")
 
 portas = {
 	'transmissor': porta_transmissor,
-	'receptor': porta_transmissor
+	'receptor': porta_receptor
 }
 
 arq = Arq(lambda arg: print(arg),portas['receptor'] , portas['transmissor'])

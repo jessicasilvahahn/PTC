@@ -33,7 +33,7 @@ além de enviar e receber quadros através desse tipo de interface'''
     SIOCGIFFLAGS = 0x8913
     SIOCSIFFLAGS = 0x8914
     
-    def __init__(self, name, ip, dstip, ** args):
+    def __init__(self, name, ip, dstip,ip2,dstip2, ** args):
         '''Define uma interface tun, mas ainda não a cria. Os parâmetros de configuraçao dessa interface devem ser informados nos argumentos:
         name: nome da interface tun
         ip: endereço IPv4 desta interface
@@ -50,6 +50,9 @@ além de enviar e receber quadros através desse tipo de interface'''
         self.mtu = self._getarg('mtu', args)
         self.qlen = self._getarg('qlen', args)
         self.fd = -1
+        self.ip_v6_origem = ip2+"/128"
+        self.ip_v6_destino = dstip2+"/128"
+
         
     def __del__(self):
         self.stop()
@@ -121,8 +124,14 @@ além de enviar e receber quadros através desse tipo de interface'''
         ifr = struct.pack('16sH22x', self.name, flag)        
         fcntl.ioctl(s, Tun.SIOCSIFFLAGS, ifr)
         
-        v = os.system('ifconfig tun0 inet6 add 2801::3/128')
-        v = os.system('route -A inet6 add 2801::2/128 dev tun0') 
+        self.name = self.name.decode("utf-8") 
+        conf_aux1 = "ifconfig " + self.name + " inet6 add " + self.ip_v6_origem
+        conf_aux2 = "route -A inet6 add " + self.ip_v6_destino + " dev " + self.name
+        v = os.system(conf_aux1)
+        v = os.system(conf_aux2) 
+
+    
+
         
         
         

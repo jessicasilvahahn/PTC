@@ -29,8 +29,6 @@ class Arq:
 
     # estruturas comportamentais ------------------------------------------------
     def comportamentoArq(self, evento):
-        print("Evento",evento)
-        print("Estado",self.estado)
         if self.estado == "comunicando":
             if evento == 'envia payload':
                 self.envia_dados()
@@ -58,7 +56,6 @@ class Arq:
 
     def trata_recebimento(self):
         if self.quadro['sequencia'] == self.m:
-            #self.tratador_aplicacao(self.quadro['payload'])
             self.envia_confirmacao()
             self.m = not self.m
             self.estado = "aguardandoAck"
