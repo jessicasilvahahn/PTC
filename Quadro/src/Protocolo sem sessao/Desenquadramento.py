@@ -16,6 +16,7 @@ class Desenquadrador:
         self.estado_anterior = None
         self.continuarRecebendo = None
         self.timeout = False
+        self.payload_corrompido = False
 
     def desenquadra(self, byte):
         self.estado_anterior = self.estado
@@ -92,7 +93,8 @@ class Desenquadrador:
             return payload
         else:
             erro_crc = "ERRO: Payload corrompido!"
-            raise RuntimeError(erro_crc)
+            self.payload_corrompido = True
+            return 
 
     def handle_timeout(self):
         self.finalizaRecepcao()

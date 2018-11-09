@@ -53,9 +53,12 @@ class CallbackEnq(poller.Callback):
   	else:
   		return
 
-  	print("AVISO: Enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
-  	payload = self.arq.converte_list(self.arq.quadro['payload']) 
-  	self.tun.send_frame(payload, self.arq.proto)
+  	if(self.enq.payload_corrompido):
+  		print("AVISO: Não enviamos payload corrompido para a tun")
+  	else:
+	  	print("AVISO: Enviando o seguinte quadro recebido para tun: \n",self.arq.converte_list(self.arq.quadro['payload']))
+	  	payload = self.arq.converte_list(self.arq.quadro['payload']) 
+	  	self.tun.send_frame(payload, self.arq.proto)
 
 
 
