@@ -101,6 +101,7 @@ class Arq:
 
     def envia(self, proto,payload):
         #conversao proto
+        self.converte_proto(proto)
         # Nós suportamos apenas UTF-8 no momento :D
         payload = self.converte_tipo(payload)
         self.payload = payload
