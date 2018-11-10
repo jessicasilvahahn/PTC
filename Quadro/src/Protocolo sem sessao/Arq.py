@@ -101,8 +101,6 @@ class Arq:
 
     def envia(self, proto,payload):
         #conversao proto
-        print("recebeu proto original da tun", proto)
-        print("recebeu da tun algo: ",self.converte_proto(proto))
         # Nós suportamos apenas UTF-8 no momento :D
         payload = self.converte_tipo(payload)
         self.payload = payload
@@ -115,7 +113,6 @@ class Arq:
             controle = b'\x08'
         else:
             controle = b'\x00'
-        print("prot dados: ", self.proto)
         self.converte_proto(self.proto)
         quadro = [toInt(controle)] + [toInt(self.proto)] + list(self.payload)
         print("Quadro ARQ:",bytearray(quadro))
@@ -148,7 +145,7 @@ class Arq:
                 'Suportamos no momento apenas str, bytes ou inteiros')
 
     def converte_list(self,payload):
-        print("convert list",payload)
+
         if(type(payload) == type([])):
             vet = bytearray()
             for i in range(len(payload)):

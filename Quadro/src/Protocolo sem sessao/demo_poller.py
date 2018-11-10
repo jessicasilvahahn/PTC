@@ -28,13 +28,15 @@ class CallbackEnq(poller.Callback):
     self.tun = tun
 
   def handle(self):
+    self.enq.timeout = False
     quadro = self.enq.recebe()
-    print("Quadro recebido da Serial:",quadro)
-    self.arq.recebe(quadro)
-    self.arq.proto = quadro[1]
-    #enviando quadro recebedido para tun
-    self.envia_tun()
-    return
+    if(quadro!=None):
+    	print("Quadro recebido da Serial:",quadro)
+    	self.arq.recebe(quadro)
+    	self.arq.proto = quadro[1]
+    	#enviando quadro recebedido para tun
+    	self.envia_tun()
+    	return
 
   def handle_timeout(self):
    print("Timeout Serial")
