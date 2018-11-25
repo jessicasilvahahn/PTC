@@ -15,6 +15,7 @@ class Arq:
         self.payload = None
         self.tratador_aplicacao = tratador_aplicacao
         self.tentativas = 0
+        self.fifo = []
         self.quadro = {
             'payload': None,
             'sequencia': None,
@@ -49,24 +50,26 @@ class Arq:
                         self.tentativas = 0
                         self.n = not self.n
                         self.estado = "comunicando"
+                        if len(self.fifo):
+                            self.envia_dados()
                     return
-            if evento == 'envia payload':
-                self.envia_dados()
+            if evento == 'timeout':
+                self.reenvia_dados()
                 self.estado = "aguardandoAck"
 
     def trata_recebimento(self):
         if self.quadro['sequencia'] == self.m:
             self.envia_confirmacao()
             self.m = not self.m
-            self.estado = "aguardandoAck"
+            # self.estado = "aguardandoAck" # aguardar ack do que?
 
     def trata_timeout(self):
         self.tentativas += 1
-        self.comportamentoArq('envia payload')
+        self.comportamentoArq('timeout')
         if(self.recebe()==[]):
             return []
 
-        # estruturas de recepcao --------------------------------------------------
+    # estruturas de recepcao --------------------------------------------------
 
     def recebe(self,quadro):
         if ((quadro == [])):
@@ -103,21 +106,31 @@ class Arq:
         #conversao proto
         self.converte_proto(proto)
         # Nós suportamos apenas UTF-8 no momento :D
-        payload = self.converte_tipo(payload)
-        self.payload = payload
+        # payload = self.converte_tipo(payload)
+        # self.payload = payload
+        fifo.append({ 'payload': payload, 'proto': proto })
         self.comportamentoArq('envia payload')
         return
 
     def envia_dados(self):
+        pacote = self.fifo.pop(0)
         print("envia dados")
+        self.converte_proto(pacote['proto'])
+        self.payload = pacote['payload']
+        self.envia_ao_canal()
+
+    def reenvia_dados(self):
+        self.envia_ao_canal()
+
+    def envia_ao_canal(self):
         if self.n:
             controle = b'\x08'
         else:
             controle = b'\x00'
-        self.converte_proto(self.proto)
         quadro = [toInt(controle)] + [toInt(self.proto)] + list(self.payload)
         print("Quadro ARQ:",bytearray(quadro))
         self.transmissor.transmite(quadro)
+
 
     def envia_confirmacao(self):
         if self.m:
@@ -146,7 +159,6 @@ class Arq:
                 'Suportamos no momento apenas str, bytes ou inteiros')
 
     def converte_list(self,payload):
-
         if(type(payload) == type([])):
             vet = bytearray()
             for i in range(len(payload)):
