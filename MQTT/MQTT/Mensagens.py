@@ -22,8 +22,9 @@ class Mensagens:
         flags = b'\x02'
         keep = b'\x00' + b'\x00'
         cabecalho_variavel = nome_protocolo + nivel_protocolo + flags + keep
+        payload = b'\x00' + b'\x00' + b'\x00' + b'\x00' + b'\x00'
         #print("Cabeçalho Variável",cabecalho_variavel)
-        tamanho_cabecalho_variavel = len(cabecalho_variavel)
+        tamanho_cabecalho_variavel = len(cabecalho_variavel+payload)
         tamanho_restante = self.get_tamanho_restante(tamanho_cabecalho_variavel)
         #print("Tamanho Normativa",tamanho_restante)
 
@@ -32,7 +33,7 @@ class Mensagens:
         # 16 - 00010000
         cabecalho_fixo = b'\x10' + tamanho_restante
         #print("Cabeçaho Fixo", cabecalho_fixo)
-        pacote_connect = cabecalho_fixo + cabecalho_variavel
+        pacote_connect = cabecalho_fixo + cabecalho_variavel + payload
         print("Pacote connect",pacote_connect)
         return pacote_connect
 
