@@ -1,12 +1,22 @@
+#!/usr/bin/python3
+
 class Subscribe:
-  variaveis de estrutura do pacote
 
-  def Subscribe(...):
-    ...
+    def __init__(self):
+    # estrutura de um pacote mqtt
 
-  def mountMessage(self):
-    ...
+      self.pacote = {
+        'cabecalho_fixo': None,
+        'cabecalho_variavel': None,
+        'payload': None
+        }
 
-  def parseSuback(self):
-    ...
+    def mount_message(self):
+      pass
+
+    def parse_suback(self):
+      pass
+
+    def get_complete_packet(self):
+      pass
 
