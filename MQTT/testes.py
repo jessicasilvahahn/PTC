@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 from mensagens import connect
 from mensagens import publish
+from mensagens import subscribe
 import socket
 
 c = connect.Connect()
 p = publish.Publish()
+sub = subscribe.Subscribe()
 c.mount_message()
 pacote = c.get_complete_packet()
 print("Pacote Connect:",pacote)
@@ -30,4 +32,10 @@ pacote_publish = p.get_complete_packet()
 if(pacote_publish):
     print("Pacote Publish",pacote_publish)
     s.send(pacote_publish)
+    sub.mount_message(topic_name)
+    pacote_sub = sub.get_complete_packet()
+    print("Pacote:",pacote_sub)
+    s.send(pacote_sub)
+    data = s.recv(BUFFER_SIZE)
+    print(data)
     s.close()
