@@ -14,7 +14,7 @@ class Subscribe:
 
     def mount_message(self,topic_name):
         if (isinstance(topic_name, str)):
-            self.pacote['cabecalho_fixo'] = b'\x80'
+            self.pacote['cabecalho_fixo'] = b'\x82'
             packet_identifier = b'\x00' + b'\x00'
             qos = b'\x00'
             tamanho_topic_name = b'\x00' + bytes(bytearray([len(topic_name)]))

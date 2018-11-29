@@ -25,17 +25,13 @@ data = s.recv(BUFFER_SIZE)
 print ("received data:", data)
 
 
-topic_name = "sensor/temperatura/"
-topic = "22"
-p.mount_message(topic_name,topic)
-pacote_publish = p.get_complete_packet()
-if(pacote_publish):
-    print("Pacote Publish",pacote_publish)
-    s.send(pacote_publish)
-    sub.mount_message(topic_name)
-    pacote_sub = sub.get_complete_packet()
-    print("Pacote:",pacote_sub)
-    s.send(pacote_sub)
-    data = s.recv(BUFFER_SIZE)
-    print(data)
-    s.close()
+topic_name = "sensor/temperatura"
+sub.mount_message(topic_name)
+pacote_sub = sub.get_complete_packet()
+print("Pacote:",pacote_sub)
+s.send(pacote_sub)
+while(True):
+	data = s.recv(BUFFER_SIZE)
+	if(data):
+		print(data)
+
