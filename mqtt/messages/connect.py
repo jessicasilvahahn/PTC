@@ -25,6 +25,7 @@ class Connect(Message):
             len(self.packet['variable_header'] + self.packet['payload']))
         self.packet['fixed_header'] = fixed_header_size + remaining_size
 
+    # Why dont use booleans and exceptions instead of integers?
     def parse_connack(self, connack):
         control = connack[0]
         print("Controle:", control)
