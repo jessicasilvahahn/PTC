@@ -25,8 +25,19 @@ class Subscribe:
 
 
 
-    def parse_suback(self):
-      pass
+    def parse_suback(self,suback):
+        if(suback[0]==144):
+            print("Pacote é um suback\n")
+            if(suback[-1]==0):
+                print("Subscribe Aceito pelo broker\n")
+                return 1
+            else:
+                print("Subscribe Rejeitado pelo broker\n")
+                return 0
+        else:
+            print("Não é um suback\n")
+            return 0
+
 
     def get_complete_packet(self):
         if (self.pacote['cabecalho_fixo'] == None or self.pacote['cabecalho_variavel'] == None or self.pacote[

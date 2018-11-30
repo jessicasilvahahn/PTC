@@ -17,7 +17,7 @@ class Publish:
             self.pacote['cabecalho_variavel'] = tamanho_topic_name + topic_name.encode("utf-8")
             self.pacote['payload'] = topic.encode("utf-8")
             tamanho_restante_local = tamanho_restante.get_tamanho_restante(len(self.pacote['cabecalho_variavel'] + self.pacote['payload']))
-            self.pacote['cabecalho_fixo'] = b'\x30' + tamanho_restante_local
+            self.pacote['cabecalho_fixo'] = b'\x31' + tamanho_restante_local
         else:
             print("Topic Name  ou Topic não são string\n")
             return 0

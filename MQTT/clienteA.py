@@ -18,11 +18,8 @@ BUFFER_SIZE = 2024
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((TCP_IP, TCP_PORT))
 s.send(pacote)
-
 data = s.recv(BUFFER_SIZE)
-
-
-print ("received data:", data)
+c.parse_connack(data)
 
 
 topic_name = "sensor/temperatura"
@@ -32,6 +29,6 @@ print("Pacote:",pacote_sub)
 s.send(pacote_sub)
 while(True):
 	data = s.recv(BUFFER_SIZE)
-	if(data):
-		print(data)
+	sub.parse_suback(data)
+
 
