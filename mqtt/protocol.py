@@ -50,6 +50,7 @@ class connection_protocol(asyncio.Protocol):
     # We should treat the possible exception exc
     def connection_lost(self, exc):
         print('Connect transaction is finished')
+        self.loop.stop()
 
 
 class subscribe_protocol(asyncio.Protocol):
@@ -69,3 +70,7 @@ class subscribe_protocol(asyncio.Protocol):
             print('Client subscribed')
             return
         print('Subescribe rejeitado pelo broker')
+
+    def connection_lost(self, exc):
+        print('Subscribe transaction is finished')
+        self.loop.stop()
