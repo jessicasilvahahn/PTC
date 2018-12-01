@@ -3,14 +3,6 @@ from mqtt.messages.publish import Publish
 from mqtt.messages.connect import Connect
 from mqtt.messages.subscribe import Subscribe
 
-# Mocking a state, we should see how it will work,
-# maybe use a global variable, or put this control
-# in the behaivioral class
-
-
-def set_connected(connection_status):
-    is_connected = connection_status
-
 
 class publish_protocol(asyncio.Protocol):
     def __init__(self, topic, value, loop):
