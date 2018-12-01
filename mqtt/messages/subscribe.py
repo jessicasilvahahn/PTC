@@ -1,4 +1,4 @@
-from Message import Message
+from mqtt.messages.message import Message
 
 
 class Subscribe(Message):
