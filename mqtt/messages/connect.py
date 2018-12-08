@@ -28,16 +28,12 @@ class Connect(Message):
     # Why dont use booleans and exceptions instead of integers?
     def parse_connack(self, connack):
         control = connack[0]
-        print("Controle:", control)
         if(control == 32):
             state = connack[3]
-            print("Estado:", state)
             if(state == 0):
-                print("Conexão Aceita pelo Broker\n")
-                return 1
+                return True
             else:
-                print("Conexão Recusada\n")
-                return 0
+                return False
         else:
-            print("Não é um packet ConnAck\n")
-            return 0
+            print("Isn't ConnAck\n")
+            return False
