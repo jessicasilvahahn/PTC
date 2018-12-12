@@ -12,32 +12,31 @@ class Connect(Message):
         flags = b'\x02'
         fixed_header_size = b'\x10'
         keep_alive = b'\x00' + b'\x00'
-        # de onde vem esse client_id
-        client_id = "JHL-001".encode('utf-8')
+        # client id não setado
+        client_id = b'\x00'
 
         self.packet['variable_header'] = protocol_name + \
             protocol_level + flags + keep_alive
 
         self.packet['payload'] = b'\x00' + \
-            bytes(bytearray([len(client_id)])) + client_id
+            b'\x00' + client_id
 
         remaining_size = self.get_remaining_size(
             len(self.packet['variable_header'] + self.packet['payload']))
-        self.packet['fixed_header'] = fixed_header_size + remaining_size
 
-    # Why dont use booleans and exceptions instead of integers?
+        if(not remaining_size):
+            self.packet = None
+        else:
+            self.packet['fixed_header'] = fixed_header_size + remaining_size
+
     def parse_connack(self, connack):
         control = connack[0]
-        print("Controle:", control)
         if(control == 32):
             state = connack[3]
-            print("Estado:", state)
             if(state == 0):
-                print("Conexão Aceita pelo Broker\n")
-                return 1
+                return True
             else:
-                print("Conexão Recusada\n")
-                return 0
+                return False
         else:
-            print("Não é um packet ConnAck\n")
-            return 0
+            print("Isn't ConnAck\n")
+            return False

@@ -16,7 +16,10 @@ class Publish(Message):
 
             remaining_size = self.get_remaining_size(
                 len(self.packet['variable_header'] + self.packet['payload']))
-            self.packet['fixed_header'] = b'\x31' + remaining_size
+            if(not remaining_size):
+                self.packet = None
+            else:
+                self.packet['fixed_header'] = b'\x30' + remaining_size
         else:
-            print("Topic Name ou Topic não são string\n")
+            print("Topic Name or Topic aren't string\n")
             return 0

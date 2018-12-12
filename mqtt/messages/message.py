@@ -12,9 +12,9 @@ class Message:
     def get_complete_packet(self):
         if(self.packet['fixed_header'] == None or
                 self.packet['variable_header'] == None or
-                self.packet['payload'] == None):
-            print("Pacote Imcompleto ou vazio\n")
-            return 0
+                self.packet['payload'] == None or self.packet==None):
+            print("Packet is incomplete or empty\n")
+            return False
         else:
             return self.packet['fixed_header'] + \
                 self.packet['variable_header'] + self.packet['payload']
@@ -30,5 +30,5 @@ class Message:
                 remainingLength.append(encodedByte)
             return bytes(remainingLength)
         else:
-            # fazer o outro algoritmo
-            pass
+            print("Not allowed")
+            return False

@@ -1,3 +1,5 @@
 from context import mqtt
 
-mqtt.core.publish('mqtt.sj.ifsc.edu.br', 'random/topic', '42')
+core = mqtt.core.core('mqtt.sj.ifsc.edu.br')
+if(not core.publish('teste/testando', 'jessica')):
+    print("Error\n")
