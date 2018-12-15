@@ -6,14 +6,14 @@ from mqtt.messages.unsubscribe import Unsubscribe
 
 
 class publish_protocol():
-    def __init__(self, topic, value, channel):
+    def __init__(self, topic, value, channel,retain):
         self.channel = channel
-        if(len(topic) > 255):
+        if(len(topic) > 124):
             print("size isn't allowed\n")
-            print("size need to be less than 256\n")
+            print("size need to be less than 124\n")
             self.connection_lost()
         publish_message = Publish()
-        publish_message.mount_message(topic, value)
+        publish_message.mount_message(topic, value,retain)
         self.message = publish_message.get_complete_packet()
 
 
@@ -64,9 +64,9 @@ class connection_protocol():
 class subscribe_protocol():
     def __init__(self, topic_name, channel):
         self.channel = channel
-        if (len(topic_name) > 255):
+        if (len(topic_name) > 124):
             print("size isn't allowed\n")
-            print("size need to be less than 256\n")
+            print("size need to be less than 124\n")
             self.connection_lost()
         subscribe_message = Subscribe()
         subscribe_message.mount_message(topic_name)
@@ -96,12 +96,12 @@ class subscribe_protocol():
                 self.publish = True
                 return True
             else:
+                self.publish = False
                 if(data[0] == 144):
                     print('Subscribe rejected by broker')
                     self.connection_lost()
                     return False
                 else:
-                    print("Packet isn't subscribe or publish")
                     return True
 
     def connection_lost(self):
@@ -111,13 +111,14 @@ class subscribe_protocol():
 class unsubscribe_protocol():
     def __init__(self, topic_name, channel):
         self.channel = channel
-        if (len(topic_name) > 255):
+        if (len(topic_name) > 124):
             print("size isn't allowed\n")
-            print("size need to be less than 256\n")
+            print("size need to be less than 124\n")
             self.connection_lost()
-        unsubscribe_message = Unsubscribe()
-        unsubscribe_message.mount_message(topic_name)
-        self.message = unsubscribe_message.get_complete_packet()
+        self.__unsubscribe_message = Unsubscribe()
+        self.__unsubscribe_message.mount_message(topic_name)
+        self.message = self.__unsubscribe_message.get_complete_packet()
+        self.unsuback = False
 
 
     def connection_made(self):
@@ -130,9 +131,9 @@ class unsubscribe_protocol():
 
 
     def data_received(self, data):
-        unsubscribe_parser = Unsubscribe()
-        if (unsubscribe_parser.parse_unsuback(data)):
+        if (self.__unsubscribe_message.parse_unsuback(data)):
             print('Client unsubscribed')
+            self.unsuback = True
             return True
         print('Unsubscribe reject by broker')
         self.connection_lost()

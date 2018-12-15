@@ -1,0 +1,17 @@
+Considerações Importantes:
+
+*Método do core > Publish não retorna nenhum dado
+*Método do core > Publish tem uma terceiro parâmetro a mais que se setado para um o broker irá armazenar o tópico + valor enviado
+*Método do core > Subscribe retorna uma tupla (r,data), onde r é um bool que indica se o broker aceitou o subscribe e data é o dado que o broker enviou para o cliente.
+*Método do core > Subscribe tem uma função que retorna se o broker enviou um publish (método get_pulish_received retorna um bool).
+*Método do core > Unsubscribe retorna um bool indicando se o broker aceitou o unsubscribe do cliente.
+
+
+Restrições:
+
+*Tamanho do tópico em todos os métodos não podem ser maior que 124 bytes
+*Modo síncrono
+
+
+
+

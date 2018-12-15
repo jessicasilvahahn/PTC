@@ -18,9 +18,9 @@
 import context_paho  # Ensures paho is in PYTHONPATH
 import paho.mqtt.subscribe as subscribe
 
-topics = ['sensor/umidade/mar']
+topics = ['temperatura/cozinha/']
 
-m = subscribe.simple(topics, hostname="mqtt.sj.ifsc.edu.br", retained=False, msg_count=2)
-for a in m:
-    print(a.topic)
-    print(a.payload)
+while(True):
+    m = subscribe.simple(topics, hostname="mqtt.sj.ifsc.edu.br", retained=False, msg_count=1)
+    print(m.topic)
+    print(m.payload)

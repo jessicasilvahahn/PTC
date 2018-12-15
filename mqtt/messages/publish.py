@@ -6,7 +6,7 @@ class Publish(Message):
     def __init__(self):
         super().__init__()
 
-    def mount_message(self, topic_name, value):
+    def mount_message(self, topic_name, value,retain):
         if(isinstance(topic_name, str) and isinstance(value, str)):
             topic_name_size = b'\x00' + bytes(bytearray([len(topic_name)]))
             self.packet['variable_header'] = topic_name_size + \
@@ -19,7 +19,10 @@ class Publish(Message):
             if(not remaining_size):
                 self.packet = None
             else:
-                self.packet['fixed_header'] = b'\x30' + remaining_size
+                if(retain):
+                    self.packet['fixed_header'] = b'\x31' + remaining_size
+                else:
+                    self.packet['fixed_header'] = b'\x30' + remaining_size
         else:
             print("Topic Name or Topic aren't string\n")
             return 0

@@ -30,5 +30,6 @@ class Message:
                 remainingLength.append(encodedByte)
             return bytes(remainingLength)
         else:
-            print("Not allowed")
+            print("Not allowed\n")
+            print("Decrease topic size\n")
             return False

@@ -37,7 +37,7 @@ class Subscribe(Message):
             return False
 
     def parse_publish(self,publish):
-        if(publish[0] == 48 ):
+        if(publish[0] == 48 or publish[0] == 49 ):
             return True
         else:
             return False

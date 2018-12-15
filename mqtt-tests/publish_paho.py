@@ -18,4 +18,4 @@
 import context_paho  # Ensures paho is in PYTHONPATH
 import paho.mqtt.publish as publish
 
-publish.single("teste/testando", "opa", hostname="mqtt.sj.ifsc.edu.br")
+publish.single("temperatura/cozinha/", "30", hostname="mqtt.sj.ifsc.edu.br")
